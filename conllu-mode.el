@@ -1,12 +1,11 @@
 ;;; conllu-mode.el --- conllu-mode for emacs  -*- lexical-binding: t; -*-
-
 ;; Copyright (C) 2018 bruno cuconato
 
-;; Author:  <>
-;; Maintainer: 
-;; URL: https://github.com/
+;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
+;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
+;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24"))
+;; Package-Requires: ((emacs "24") (whitespace "13")
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -22,24 +21,25 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-;; https://www.emacswiki.org/emacs/SampleMode
-;; https://www.emacswiki.org/emacs/DerivedMode
-;; https://www.emacswiki.org/emacs/ModeTutorial
-;; ftp://ftp.gnu.org/old-gnu/Manuals/elisp-manual-20-2.5/html_chapter/elisp_23.html
-
 ;;; code:
 
 ;;;
+;; dependencies
+(require 'conllu-align)
+
+(require 'whitespace)
+
+;;;
 ;; misc
-(defvar conllu-tab-width 4 "Width of a tab for CoNLL-U mode")
+(defvar conllu-tab-width 2 "Width of a tab for CoNLL-U mode")
 
 ;;;
 ;; keymap
 (defvar conllu-mode-map
   ;; bogus function, as there's no need for keymaps yet
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-a" 'electric-newline-and-maybe-indent)
+    (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
+    (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
     map)
   "Keymap for conllu major mode")
 
@@ -78,8 +78,9 @@
   (setq-local comment-start "# ")
   (setq-local comment-end "")
   (setq-local truncate-lines t)
-  (setq-local whitespace-style '(face tabs newline tab-mark newline-mark))
-  (setq-local whitespace-display-mappings '((newline-mark ?\n [?$ ?\n]) (tab-mark ?\t [?§ ?\t]))) ;; original is \u00BB
+  (conllu-unalign-fields (point-min) (point-max))
+  (conllu-align-fields (point-min) (point-max))
+  (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode))
 
 
