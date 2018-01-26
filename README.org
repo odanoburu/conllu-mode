@@ -1,0 +1,35 @@
+#+TITLE: emacs mode for CoNLL-U files
+
+this mode provides simple utilities for editing and viewing CoNLL-U
+files.
+
+* features
+
+- highlighting comments, and =upostag= and =deprel= fields
+- truncate lines by default
+- show newline and tab characters using =whitespace.el=
+- aligning and unaligning column fields
+
+* missing
+
+- in a token line, jump to its =head
+- hinding columns
+- call a parser to create CoNLL-U output from a sentence
+- call external visualization tool
+- in a sentence, jump to token that has a given index
+- in sentence, jump to next token that has a given =upostag=
+- in sentence, jump to next token that has a given =deprel=
+- ...
+
+* installation
+  clone the repo and put these files where emacs will load them, as
+  in:
+#+BEGIN_SRC sh
+  git clone https://github.com/odanoburu/conllu-mode
+  cp *.el ~/some/path/
+#+END_SRC
+  in your =.emacs=:
+#+BEGIN_SRC elisp
+(add-to-list 'load-path "~/some/path/")
+(require 'conllu-mode)
+#+END_SRC
