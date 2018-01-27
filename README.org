@@ -3,16 +3,24 @@
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
+| key binding | description                                                    |
+|-------------+----------------------------------------------------------------|
+| =C-c C-a=   | align columns (inserts no real whitespace)                     |
+| =C-c C-u=   | unalign columns                                                |
+| =M-n=       | unalign current sentence, go to the next one, and align it     |
+| =M-p=       | unalign current sentence, go to the previous one, and align it |
+
 * features
 
 - highlighting comments, and =upostag= and =deprel= fields
 - truncate lines by default
 - show newline and tab characters using =whitespace.el=
 - aligning and unaligning column fields
+- jumping to next or previous sentence
 
 * missing
 
-- in a token line, jump to its =head
+- in a token line, jump to its =head=
 - hinding columns
 - call a parser to create CoNLL-U output from a sentence
 - call external visualization tool
@@ -20,7 +28,7 @@ files.
 - in sentence, jump to next token that has a given =upostag=
 - in sentence, jump to next token that has a given =deprel=
 - ...
-
+  
 * installation
   clone the repo and put these files where emacs will load them, as
   in:
