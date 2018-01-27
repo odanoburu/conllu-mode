@@ -1,0 +1,5 @@
+#+TITLE: TODO list for CoNLL-U mode
+
+- make the conllu-*-sentence less brittle by defining 'forward-to-token-line
+- experiment with parsec.el
+- implement missing features (listed in README)

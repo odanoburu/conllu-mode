@@ -3,6 +3,8 @@
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
+* default key bindings
+
 | key binding | description                                                    |
 |-------------+----------------------------------------------------------------|
 | =C-c C-a=   | align columns (inserts no real whitespace)                     |
