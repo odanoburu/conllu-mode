@@ -31,39 +31,69 @@
 
 ;;;
 ;; misc
-(defvar conllu-tab-width 2 "Width of a tab for CoNLL-U mode")
+(defvar conllu-tab-width 2 "width of a tab for CoNLL-U mode")
+
+(defun conllu-forward-sentence ()
+  "jump to end of sentence, which in CoNLL-U files is actually
+the next blank line."
+  (interactive)
+  (forward-sentence)
+  (forward-line))
+
+(defun conllu-next-sentence ()
+  "unalign sentence at point, jump to next sentence and align it."
+  (interactive)
+  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
+  (conllu-forward-sentence)
+  (forward-line 2)
+  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
+
+(defun conllu-previous-sentence ()
+  "unalign sentence at point, jump to next sentence and align it."
+  (interactive)
+  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
+  (backward-sentence)
+  (forward-line -2)
+  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
 
 ;;;
 ;; keymap
 (defvar conllu-mode-map
-  ;; bogus function, as there's no need for keymaps yet
   (let ((map (make-sparse-keymap)))
     (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
     (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
+    (define-key map [(meta ?e)] 'conllu-forward-sentence)
+    (define-key map [(meta ?n)] 'conllu-next-sentence)
+    (define-key map [(meta ?p)] 'conllu-previous-sentence)
     map)
-  "Keymap for conllu major mode")
+  "keymap for conllu major mode")
 
 ;;;
 ;; syntax table
 (defvar conllu-mode-syntax-table
   (let ((st (make-syntax-table)))
     (modify-syntax-entry ?_ "w" st) ; _ is (part of) word, not whitespace
+    (modify-syntax-entry ?, "w" st)
+    (modify-syntax-entry ?. "w" st)
     (modify-syntax-entry ?# "<" st) ; begins comment
     (modify-syntax-entry ?\n ">" st) ; ends comment
     st)
-  "Syntax table for conllu-mode")
+  "syntax table for conllu-mode")
 
 ;;;
 ;; fonts
 (defvar conllu-keywords
-  '("ADJ" "ADP" "ADV" "AUX" "CCONJ" "DET" "INTJ" "NOUN" "NUM" "PART" "PRON" "PROPN" "PUNCT" "SCONJ" "SYM" "VERB" "X"))
+  '("ADJ" "ADP" "ADV" "AUX" "CCONJ" "DET" "INTJ" "NOUN" "NUM" "PART" "PRON" "PROPN" "PUNCT" "SCONJ" "SYM" "VERB" "X")
+  "possible upostag values")
 
 (defvar conllu-constants
-  '("acl" "advcl" "advmod" "amod" "appos" "aux" "case" "cc" "ccomp" "clf" "compound" "conj" "cop" "csubj" "dep" "det" "discourse" "dislocated" "expl" "fixed" "flat" "goeswith" "iobj" "list" "mark" "nmod" "nsubj" "nummod" "obj" "obl" "orphan" "parataxis" "punct" "reparandum" "root" "vocative" "xcomp"))
+  '("acl" "advcl" "advmod" "amod" "appos" "aux" "case" "cc" "ccomp" "clf" "compound" "conj" "cop" "csubj" "dep" "det" "discourse" "dislocated" "expl" "fixed" "flat" "goeswith" "iobj" "list" "mark" "nmod" "nsubj" "nummod" "obj" "obl" "orphan" "parataxis" "punct" "reparandum" "root" "vocative" "xcomp")
+  "possible deprel values")
 
 (defvar conllu-font-lock-defaults
   `((( ,(regexp-opt conllu-keywords 'words) . font-lock-builtin-face)
-     ( ,(regexp-opt conllu-constants 'words) . font-lock-constant-face))))
+     ( ,(regexp-opt conllu-constants 'words) . font-lock-constant-face)))
+  "default font locks for conllu-mode")
 
 ;;;
 ;; derive mode
@@ -77,9 +107,8 @@
     (setq-local tab-width conllu-tab-width))
   (setq-local comment-start "# ")
   (setq-local comment-end "")
+  (setq-local sentence-end ".$$") ;; to be able to use M-a and M-e to jump
   (setq-local truncate-lines t)
-  (conllu-unalign-fields (point-min) (point-max))
-  (conllu-align-fields (point-min) (point-max))
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode))
 

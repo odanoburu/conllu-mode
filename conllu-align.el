@@ -31,6 +31,17 @@ Assumes point is at beginning of line."
   "Skip forward over one field."
   (skip-chars-forward "^[\t\n]"))
 
+(defun sentence-begin-point ()
+  (save-excursion (backward-sentence) (point)))
+
+(defun sentence-end-point ()
+  (save-excursion (forward-sentence) (point)))
+
+(defun sentence-points ()
+  (let ((start (sentence-begin-point))
+        (end (sentence-end-point)))
+    (list start end)))
+
 (defun conllu-column-widths ()
   (let ((widths '()))
     ;; Construct list of column widths:
@@ -64,7 +75,8 @@ Assumes point is at beginning of line."
 (defun conllu-align-fields (beg end)
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (list (point-min) (point-max))))
+                 (sentence-points))) ; if interactive, by default
+                                     ; align sentence
   (setq end (copy-marker end))
   (save-excursion
     (save-restriction
@@ -140,7 +152,7 @@ Assumes point is at beginning of line."
   ""
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (list (point-min) (point-max))))
+                 (sentence-points)))
   ;; Remove any soft alignment:
   (mapc #'conllu-delete-overlay (overlays-in beg end))
   (with-silent-modifications
