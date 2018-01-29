@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13")
+;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of one finds in csv-mode.el.
 

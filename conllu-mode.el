@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13")
+;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -26,35 +26,14 @@
 ;;;
 ;; dependencies
 (require 'conllu-align)
+(require 'conllu-move)
 
+(require 'parsec)
 (require 'whitespace)
 
 ;;;
 ;; misc
 (defvar conllu-tab-width 2 "width of a tab for CoNLL-U mode")
-
-(defun conllu-forward-sentence ()
-  "jump to end of sentence, which in CoNLL-U files is actually
-the next blank line."
-  (interactive)
-  (forward-sentence)
-  (forward-line))
-
-(defun conllu-next-sentence ()
-  "unalign sentence at point, jump to next sentence and align it."
-  (interactive)
-  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
-  (conllu-forward-sentence)
-  (forward-line 2)
-  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
-
-(defun conllu-previous-sentence ()
-  "unalign sentence at point, jump to next sentence and align it."
-  (interactive)
-  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
-  (backward-sentence)
-  (forward-line -2)
-  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
 
 ;;;
 ;; keymap
