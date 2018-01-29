@@ -7,7 +7,6 @@
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
 ;; Keywords: extensions
-;; Note: this code is a simplified version of one finds in csv-mode.el.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,6 +23,8 @@
 
 (require 'conllu-align)
 
+;;;
+;; sentence
 (defun conllu-forward-to-token-line ()
   (conllu-move-to-token-line 1))
 
@@ -57,3 +58,9 @@ the next blank line."
   (backward-sentence)
   (conllu-backward-to-token-line)
   (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
+
+;;;
+;; token
+;(defun conllu-move-to-head)
+
+(provide 'conllu-move)

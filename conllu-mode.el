@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
+;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,9 @@
 ;; dependencies
 (require 'conllu-align)
 (require 'conllu-move)
+(require 'conllu-parse)
 
+(require 'cl)
 (require 'parsec)
 (require 'whitespace)
 
