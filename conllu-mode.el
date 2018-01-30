@@ -99,3 +99,5 @@
 (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
 
 (provide 'conllu-mode)
+
+;;; conllu-mode.el ends here

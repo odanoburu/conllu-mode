@@ -171,3 +171,5 @@ Auto-alignment means left align text and right align numbers."
                  (const right) (const auto)))
 
 (provide 'conllu-align)
+
+;;; conllu-align.el ends here
