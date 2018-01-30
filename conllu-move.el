@@ -7,7 +7,6 @@
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
 ;; Keywords: extensions
-;; Note: this code is a simplified version of one finds in csv-mode.el.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,7 +22,10 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'conllu-align)
+(require 'conllu-parse)
 
+;;;
+;; sentence
 (defun conllu-forward-to-token-line ()
   (conllu-move-to-token-line 1))
 
@@ -57,3 +59,22 @@ the next blank line."
   (backward-sentence)
   (conllu-backward-to-token-line)
   (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
+
+;;;
+;; token
+(defun conllu-move-to-head ()
+  "moves point to the head token of the present token (if it has
+one). if root, moves to beginning of sentence"
+  (interactive)
+  (when (conllu-not-looking-at-token)
+    (user-error "%s" "Error: not on token line"))
+  (beginning-of-line)
+  (destructuring-bind (ix _ _ _ _ _ h _ _ _)
+      (parsec-parse (conllu--token))
+    (when (equal h "_")
+      (user-error "%s" "Error: token has no head"))
+    (forward-line (- h ix 1)))) ;; 1 to correct for the fact that
+                                ;; parsing the token takes us to next
+                                ;; line
+
+(provide 'conllu-move)

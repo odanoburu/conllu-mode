@@ -1,5 +1,6 @@
 #+TITLE: TODO list for CoNLL-U mode
 
-- make the conllu-*-sentence less brittle by defining 'forward-to-token-line
-- experiment with parsec.el
+- [ ] experiment with parsec.el
+  - [x] implement move-to-token-head
+  - [ ] validate conllu file on closing buffer (or saving?)
 - implement missing features (listed in README)
