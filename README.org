@@ -11,6 +11,7 @@ files.
 | =C-c C-u=   | unalign columns                                                |
 | =M-n=       | unalign current sentence, go to the next one, and align it     |
 | =M-p=       | unalign current sentence, go to the previous one, and align it |
+| =C-c C-h=   | move point to head token of present token                      |
 
 * features
 
@@ -19,11 +20,11 @@ files.
 - show newline and tab characters using =whitespace.el=
 - aligning and unaligning column fields
 - jumping to next or previous sentence
+- in a token line, jump to its =head=
 
 * missing
 
-- in a token line, jump to its =head=
-- hinding columns
+- hiding columns
 - call a parser to create CoNLL-U output from a sentence
 - call external visualization tool
 - in a sentence, jump to token that has a given index
@@ -43,3 +44,8 @@ files.
 (add-to-list 'load-path "~/some/path/")
 (require 'conllu-mode)
 #+END_SRC
+
+* contributing
+  contributions are welcome! even comments from experienced elispers
+  are welcome. just send an email or open an issue -- if you'd like a
+  suggestion on what to work on, take a look at the open issues.

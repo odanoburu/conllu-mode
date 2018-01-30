@@ -22,44 +22,58 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (defun conllu--spaces ()
-  (parsec-many (parsec-ch ? )))
-
-(defun conllu--symbol (cp)
   (parsec-optional*
-    (conllu--spaces))
-  (funcall cp))
+   (parsec-many
+    (parsec-ch ?\s))))
 
 (defun conllu--empty-field ()
-  ;; doesn't work
-  (conllu--symbol (function (parsec-ch ?_))))
+  (conllu--spaces)
+  (parsec-ch ?_))
 
 (defun conllu--field ()
-  (conllu--symbol '(parsec-none-of ?\t ?\n)))
+  (conllu--spaces)
+  (parsec-many-as-string
+   (parsec-none-of ?\t ?\s ?\n)))
 
 (defun conllu--maybe-empty-field ()
-  (parsec-or (conllu--empty-field) (conllu--field)))
+  (parsec-or
+   (conllu--empty-field)
+   (conllu--field)))
 
 (defun conllu--index ()
-  (string-to-int (conllu--field)))
+  (conllu--spaces)
+  (string-to-int
+   (parsec-many-as-string (parsec-digit))))
+
+(defun conllu--tab ()
+  (conllu--spaces)
+  (parsec-ch ?\t) nil)
+
+(defun conllu--eol ()
+  (conllu--spaces)
+  (parsec-newline) nil)
 
 (defun conllu--token ()
-  (parsec-collect
+  (parsec-collect*
    (conllu--index) ; might not be empty
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--index)
+   (conllu--tab)
    (conllu--maybe-empty-field)
+   (conllu--tab)
    (conllu--maybe-empty-field)
-   (conllu--maybe-empty-field)))
-
-(defun conllu-token-head ()
-  (when (conllu-not-looking-at-token)
-    (user-error "%s" "Error: not on token line"))
-  (beginning-of-line)
-  (destructuring-bind (ix _ _ _ _ _ h _ _ _) (parsec-parse (conllu--token))
-    (forward-line (- h ix))))
+   (conllu--tab)
+   (conllu--maybe-empty-field)
+   (conllu--eol)))
 
 (provide 'conllu-parse)

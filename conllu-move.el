@@ -22,6 +22,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'conllu-align)
+(require 'conllu-parse)
 
 ;;;
 ;; sentence
@@ -61,6 +62,19 @@ the next blank line."
 
 ;;;
 ;; token
-;(defun conllu-move-to-head)
+(defun conllu-move-to-head ()
+  "moves point to the head token of the present token (if it has
+one). if root, moves to beginning of sentence"
+  (interactive)
+  (when (conllu-not-looking-at-token)
+    (user-error "%s" "Error: not on token line"))
+  (beginning-of-line)
+  (destructuring-bind (ix _ _ _ _ _ h _ _ _)
+      (parsec-parse (conllu--token))
+    (when (equal h "_")
+      (user-error "%s" "Error: token has no head"))
+    (forward-line (- h ix 1)))) ;; 1 to correct for the fact that
+                                ;; parsing the token takes us to next
+                                ;; line
 
 (provide 'conllu-move)
