@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
+;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl-lib))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of one finds in csv-mode.el.
 
@@ -171,3 +171,5 @@ Auto-alignment means left align text and right align numbers."
                  (const right) (const auto)))
 
 (provide 'conllu-align)
+
+;;; conllu-align.el ends here

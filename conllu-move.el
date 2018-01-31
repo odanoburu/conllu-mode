@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec))
+;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl-lib))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 
 (require 'conllu-align)
 (require 'conllu-parse)
+
+(require 'cl-lib)
 
 ;;;
 ;; sentence
@@ -78,3 +80,5 @@ one). if root, moves to beginning of sentence"
                                 ;; line
 
 (provide 'conllu-move)
+
+;;; conllu-move.el ends here
