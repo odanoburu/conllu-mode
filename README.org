@@ -49,4 +49,4 @@ files.
   contributions are welcome! even comments from experienced elispers
   are welcome. just send an email or open an issue -- if you'd like a
   suggestion on what to work on, take a look at the open issues or at
-  the [[* missing]].
+  the missing features (above).
