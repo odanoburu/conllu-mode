@@ -21,23 +21,79 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'conllu-align)
 (require 'conllu-parse)
 
 (require 'cl-lib)
 
 ;;;
+;; token
+
+;; looking at functions
+(defsubst conllu--not-looking-at-token ()
+  "Return t if looking at blank or comment line, nil otherwise.
+assumes point is at beginning of line."
+  (looking-at (concat " *$" "\\|" "#")))
+
+(defsubst conllu--looking-at-end-of-field ()
+  "Skip forward over one field."
+  (skip-chars-forward "^[\t\n]"))
+
+;; tokens are divided in simple, multi and empty tokens.
+(defsubst conllu--looking-at-stoken ()
+  "return t if looking at a simple token line, nil
+otherwise. assumes point is at beginning of line."
+  (looking-at "[0-9]*[^-.]\t"))
+
+(defsubst conllu--looking-at-mtoken ()
+  "return t if looking at a multi-token line, nil
+otherwise. assumes point is at beginning of line."
+  (looking-at "[0-9]*-[0-9]*\t"))
+
+(defsubst conllu--looking-at-etoken ()
+  "return t if looking at an empty token line, nil
+otherwise. assumes point is at beginning of line."
+  (looking-at "[0-9]*\\.[0-9]*\t"))
+
+(defun conllu-move-to-head ()
+  "moves point to the head token of the present token (if it has
+one). if root, moves to beginning of sentence"
+  (interactive)
+  (beginning-of-line)
+  (when (conllu--not-looking-at-token)
+    (user-error "%s" "Error: not on token line"))
+  (destructuring-bind (ix _ _ _ _ _ h _ _ _)
+      (parsec-parse (conllu--token))
+    (forward-line -1) ;; back to parsed line
+    (when (member h (list "_" 0))
+      (user-error "%s" "Error: token has no head"))
+    (conllu--move-to-existing-head ix h)))
+
+(defun conllu--move-to-existing-head (ix head)
+  (if (> ix head)
+      (conllu--move-forward-to-head head -1)
+    (conllu--move-forward-to-head head 1)))
+
+(defun conllu--move-forward-to-head (head n)
+  (beginning-of-line)
+  (unless (looking-at (concat (int-to-string head) "\t"))
+    (progn (forward-line n)
+           (conllu--move-forward-to-head head n))))
+
+;;;
 ;; sentence
 (defun conllu-forward-to-token-line ()
-  (conllu-move-to-token-line 1))
+  "move to next token line."
+  (conllu--move-to-token-line 1))
 
 (defun conllu-backward-to-token-line ()
-  (conllu-move-to-token-line -1))
+  "move to previous token line."
+  (conllu--move-to-token-line -1))
 
-(defun conllu-move-to-token-line (n)
+(defun conllu--move-to-token-line (n)
+  "call with 1 or -1."
   (when (conllu-not-looking-at-token)
     (forward-line n)
-    (conllu-move-to-token-line n)))
+    (conllu--move-to-token-line n)))
 
 (defun conllu-forward-sentence ()
   "jump to end of sentence, which in CoNLL-U files is actually
@@ -61,23 +117,6 @@ the next blank line."
   (backward-sentence)
   (conllu-backward-to-token-line)
   (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
-
-;;;
-;; token
-(defun conllu-move-to-head ()
-  "moves point to the head token of the present token (if it has
-one). if root, moves to beginning of sentence"
-  (interactive)
-  (when (conllu-not-looking-at-token)
-    (user-error "%s" "Error: not on token line"))
-  (beginning-of-line)
-  (destructuring-bind (ix _ _ _ _ _ h _ _ _)
-      (parsec-parse (conllu--token))
-    (when (equal h "_")
-      (user-error "%s" "Error: token has no head"))
-    (forward-line (- h ix 1)))) ;; 1 to correct for the fact that
-                                ;; parsing the token takes us to next
-                                ;; line
 
 (provide 'conllu-move)
 
