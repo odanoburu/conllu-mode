@@ -51,6 +51,14 @@
      (string-to-int
       (parsec-many-as-string (parsec-digit))))))
 
+(defun conllu--meta-separator ()
+  (parsec-optional-maybe
+   (parsec-one-of ?- ?.)))
+
+(defun conllu--other-index ()
+  (parsec-optional-maybe
+   (parsec-many-as-string (parsec-digit))))
+
 (defun conllu--tab ()
   (conllu--symbol #'parsec-ch ?\t)
   nil)
@@ -62,6 +70,8 @@
 (defun conllu--token ()
   (parsec-collect*
    (conllu--index) ; might not be empty
+   (conllu--meta-separator)
+   (conllu--other-index)
    (conllu--tab)
    (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
@@ -73,7 +83,7 @@
    (conllu--tab)
    (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--index) ; TODO: can be empty
+   (conllu--maybe-empty #'conllu--index)
    (conllu--tab)
    (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
