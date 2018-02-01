@@ -44,6 +44,8 @@
     (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
     (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
     (define-key map [(control ?c) (control ?h)] 'conllu-move-to-head)
+    (define-key map [(control ?c) ?f] 'conllu-field-forward)
+    (define-key map [(control ?c) ?b] 'conllu-field-backward)
     (define-key map [(meta ?e)] 'conllu-forward-sentence)
     (define-key map [(meta ?n)] 'conllu-next-sentence)
     (define-key map [(meta ?p)] 'conllu-previous-sentence)

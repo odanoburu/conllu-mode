@@ -11,7 +11,10 @@ files.
 | =C-c C-u=   | unalign columns                                                |
 | =M-n=       | unalign current sentence, go to the next one, and align it     |
 | =M-p=       | unalign current sentence, go to the previous one, and align it |
+| =C-c f=     | move forward to next field in a token line                     |
+| =C-c b=     | move backward to previous field in a token line                |
 | =C-c C-h=   | move point to head token of present token                      |
+
 
 * features
 
