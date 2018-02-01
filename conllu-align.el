@@ -22,36 +22,29 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defsubst conllu-not-looking-at-token ()
-  "Return t if looking at blank or comment line, nil otherwise.
-Assumes point is at beginning of line."
-  (looking-at (concat " *$" "\\|" "#")))
+(require 'conllu-move)
 
-(defsubst conllu-end-of-field ()
-  "Skip forward over one field."
-  (skip-chars-forward "^[\t\n]"))
-
-(defun sentence-begin-point ()
+(defun conllu--sentence-begin-point ()
   (save-excursion (backward-sentence) (point)))
 
-(defun sentence-end-point ()
+(defun conllu--sentence-end-point ()
   (save-excursion (forward-sentence) (point)))
 
-(defun sentence-points ()
-  (let ((start (sentence-begin-point))
-        (end (sentence-end-point)))
+(defun conllu--sentence-points ()
+  (let ((start (conllu--sentence-begin-point))
+        (end (conllu--sentence-end-point)))
     (list start end)))
 
-(defun conllu-column-widths ()
+(defun conllu--column-widths ()
   (let ((widths '()))
     ;; Construct list of column widths:
     (while (not (eobp))                   ; for each token...
-      (or (conllu-not-looking-at-token)
+      (or (conllu--not-looking-at-token)
           (let ((w widths)
                 (col (current-column))
                 x)
             (while (not (eolp))
-              (conllu-end-of-field)
+              (conllu--looking-at-end-of-field)
               (setq x (- (current-column) col)) ; Field width.
               (if w
                   (if (> x (car w)) (setcar w x))
@@ -62,20 +55,20 @@ Assumes point is at beginning of line."
       (forward-line))
     widths))
 
-(defun conllu-make-overlay (beg end &optional buffer front-advance rear-advance props)
+(defun conllu--make-overlay (beg end &optional buffer front-advance rear-advance props)
   (let ((o (make-overlay beg end buffer front-advance rear-advance)))
     (overlay-put o 'conllu t)
     (while props
       (overlay-put o (pop props) (pop props)))
     o))
 
-(defun conllu-delete-overlay (o)
+(defun conllu--delete-overlay (o)
   (and (overlay-get o 'conllu) (delete-overlay o)))
 
 (defun conllu-align-fields (beg end)
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (sentence-points))) ; if interactive, by default
+                 (conllu--sentence-points))) ; if interactive, by default
                                      ; align sentence
   (setq end (copy-marker end))
   (save-excursion
@@ -83,12 +76,12 @@ Assumes point is at beginning of line."
       (narrow-to-region beg end)
       (set-marker end nil)
       (goto-char (point-min))
-      (let ((widths (conllu-column-widths)))
+      (let ((widths (conllu--column-widths)))
 
         ;; Align fields:
         (goto-char (point-min))
         (while (not (eobp))             ; for each token...
-          (unless (conllu-not-looking-at-token)
+          (unless (conllu--not-looking-at-token)
             (let ((w widths)
                   (column 0))    ;Desired position of left-side of this column.
               (while (and w (not (eolp)))
@@ -99,7 +92,7 @@ Assumes point is at beginning of line."
                        (right-padding 0)
                        (field-width
                         (- (- (current-column)
-                              (progn (conllu-end-of-field) (current-column)))))
+                              (progn (conllu--looking-at-end-of-field) (current-column)))))
                        (column-width (pop w))
                        (x (- column-width field-width))) ; Required padding.
                   (set-marker end (point)) ; End of current field.
@@ -131,7 +124,7 @@ Assumes point is at beginning of line."
                             right-padding (- x y)))))
 
                   ;; Do not hide separators...
-                    (let ((overlay (conllu-make-overlay beg (point) nil nil t)))
+                    (let ((overlay (conllu--make-overlay beg (point) nil nil t)))
                       (when (> left-padding 0) ; Pad on the left.
                         ;; Display spaces before field:
                         (overlay-put overlay 'before-string
@@ -152,15 +145,15 @@ Assumes point is at beginning of line."
   ""
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (sentence-points)))
+                 (conllu--sentence-points)))
   ;; Remove any soft alignment:
-  (mapc #'conllu-delete-overlay (overlays-in beg end))
+  (mapc #'conllu--delete-overlay (overlays-in beg end))
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
 
 (defcustom conllu-align-padding 1
   "Aligned field spacing: must be a positive integer.
-Number of spaces used by `conllu-align-fields' after separators."
+Number of spaces used by `conllu--align-fields' after separators."
   :type 'integer)
 
 (defcustom conllu-align-style 'left

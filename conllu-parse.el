@@ -67,7 +67,7 @@
    (conllu--tab)
    (conllu--maybe-empty-field)
    (conllu--tab)
-   (conllu--index)
+   (conllu--index) ; TODO: can be empty
    (conllu--tab)
    (conllu--maybe-empty-field)
    (conllu--tab)
