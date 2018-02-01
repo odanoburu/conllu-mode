@@ -26,17 +26,32 @@
 (require 'cl-lib)
 
 ;;;
-;; token
+;; fields
+(defsubst conllu--skip-to-end-of-field ()
+  "skip forward over one field."
+  (skip-chars-forward "^[\t\n]"))
 
-;; looking at functions
+(defun conllu-field-forward ()
+  "move to next field. if at end of sentence, go to next line."
+  (interactive)
+  (conllu--skip-to-end-of-field)
+  (forward-char))
+
+(defun conllu-field-backward ()
+  "move to previous field. if at beginning of sentence, go to
+previous line"
+  (interactive)
+  (skip-chars-backward "^[\t\n]")
+  (forward-char -1)
+  (skip-chars-backward "^[\t\n]"))
+
+;;;
+;; token
+;< looking at functions
 (defsubst conllu--not-looking-at-token ()
   "Return t if looking at blank or comment line, nil otherwise.
 assumes point is at beginning of line."
   (looking-at (concat " *$" "\\|" "#")))
-
-(defsubst conllu--looking-at-end-of-field ()
-  "Skip forward over one field."
-  (skip-chars-forward "^[\t\n]"))
 
 ;; tokens are divided in simple, multi and empty tokens.
 (defsubst conllu--looking-at-stoken ()
@@ -53,7 +68,9 @@ otherwise. assumes point is at beginning of line."
   "return t if looking at an empty token line, nil
 otherwise. assumes point is at beginning of line."
   (looking-at "[0-9]*\\.[0-9]*\t"))
+;>
 
+;< move to token head
 (defun conllu-move-to-head ()
   "moves point to the head token of the present token (if it has
 one). if root, moves to beginning of sentence"
@@ -78,6 +95,7 @@ one). if root, moves to beginning of sentence"
   (unless (looking-at (concat (int-to-string head) "\t"))
     (progn (forward-line n)
            (conllu--move-forward-to-head head n))))
+;>
 
 ;;;
 ;; sentence
