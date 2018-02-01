@@ -61,7 +61,7 @@ one). if root, moves to beginning of sentence"
   (beginning-of-line)
   (when (conllu--not-looking-at-token)
     (user-error "%s" "Error: not on token line"))
-  (destructuring-bind (ix _ _ _ _ _ h _ _ _)
+  (destructuring-bind (ix _ _ _ _ _ _ _ h _ _ _)
       (parsec-parse (conllu--token))
     (forward-line -1) ;; back to parsed line
     (when (member h (list "_" 0))
