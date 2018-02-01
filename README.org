@@ -5,16 +5,15 @@ files.
 
 * default key bindings
 
-| key binding | description                                                    |
-|-------------+----------------------------------------------------------------|
-| =C-c C-a=   | align columns (inserts no real whitespace)                     |
-| =C-c C-u=   | unalign columns                                                |
-| =M-n=       | unalign current sentence, go to the next one, and align it     |
-| =M-p=       | unalign current sentence, go to the previous one, and align it |
-| =C-c f=     | move forward to next field in a token line                     |
-| =C-c b=     | move backward to previous field in a token line                |
-| =C-c C-h=   | move point to head token of present token                      |
-
+| key binding | description                                                                                          |
+|-------------+------------------------------------------------------------------------------------------------------|
+| =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence) |
+| =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
+| =M-n=       | unalign current sentence, go to the next one, and align it                                           |
+| =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
+| =C-c f=     | move forward to next field in a token line                                                           |
+| =C-c b=     | move backward to previous field in a token line                                                      |
+| =C-c C-h=   | move point to head token of present token                                                            |
 
 * features
 
