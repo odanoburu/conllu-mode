@@ -26,54 +26,60 @@
    (parsec-many
     (parsec-ch ?\s))))
 
+(defun conllu--symbol (parser &rest args)
+  (parsec-and
+   (conllu--spaces)
+   (apply parser args)))
+
 (defun conllu--empty-field ()
-  (conllu--spaces)
-  (parsec-ch ?_))
+  (conllu--symbol #'parsec-ch ?_))
 
-(defun conllu--field ()
-  (conllu--spaces)
-  (parsec-many-as-string
-   (parsec-none-of ?\t ?\s ?\n)))
+(defun conllu--no-space-field ()
+  (conllu--symbol
+   (lambda ()
+     (parsec-many-as-string
+      (parsec-none-of ?\t ?\s ?\n)))))
 
-(defun conllu--maybe-empty-field ()
+(defun conllu--maybe-empty (parser &rest args)
   (parsec-or
    (conllu--empty-field)
-   (conllu--field)))
+   (apply parser args)))
 
 (defun conllu--index ()
-  (conllu--spaces)
-  (string-to-int
-   (parsec-many-as-string (parsec-digit))))
+  (conllu--symbol
+   (lambda ()
+     (string-to-int
+      (parsec-many-as-string (parsec-digit))))))
 
 (defun conllu--tab ()
-  (conllu--spaces)
-  (parsec-ch ?\t) nil)
+  (conllu--symbol #'parsec-ch ?\t)
+  nil)
 
 (defun conllu--eol ()
-  (conllu--spaces)
-  (parsec-newline) nil)
+  (conllu--symbol #'parsec-newline)
+  nil)
 
 (defun conllu--token ()
   (parsec-collect*
    (conllu--index) ; might not be empty
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
    (conllu--index) ; TODO: can be empty
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--tab)
-   (conllu--maybe-empty-field)
+   (conllu--maybe-empty #'conllu--no-space-field)
    (conllu--eol)))
 
 (provide 'conllu-parse)
