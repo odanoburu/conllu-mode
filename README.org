@@ -30,6 +30,8 @@ files.
 - in a sentence, jump to token that has a given index
 - in sentence, jump to next token that has a given =upostag=
 - in sentence, jump to next token that has a given =deprel=
+# are the above two really interesting? an incremental search forward
+# would probably be enough
 - ...
   
 * installation
