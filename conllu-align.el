@@ -30,6 +30,9 @@
 (defun conllu--sentence-end-point ()
   (save-excursion (forward-sentence) (point)))
 
+(defun conllu--field-end-point ()
+  (conllu-field-forward))
+
 (defun conllu--sentence-points ()
   (let ((start (conllu--sentence-begin-point))
         (end (conllu--sentence-end-point)))
@@ -44,7 +47,7 @@
                 (col (current-column))
                 x)
             (while (not (eolp))
-              (conllu--looking-at-end-of-field)
+              (conllu--skip-to-end-of-field)
               (setq x (- (current-column) col)) ; Field width.
               (if w
                   (if (> x (car w)) (setcar w x))
@@ -162,6 +165,53 @@ Alignment style used by `conllu-align-fields'.
 Auto-alignment means left align text and right align numbers."
   :type '(choice (const left) (const centre)
                  (const right) (const auto)))
+
+;;;
+;; hide columns
+(defun conllu-hide-columns (&rest columns)
+  "hides the columns specified (names should be lower-case,
+exactly the same as in the UD specification)."
+  (interactive)
+  (let ((col-dict (copy-tree '(("id" ('conllu-id 1)) ("form" ('conllu-form 2)) ("lemma" ('conllu-lemma 3)) ("upostag" ('conllu-upostag 4)) ("xpostag" ('conllu-xpostag 5)) ("feats" ('conllu-feats 6)) ("head" ('conllu-head 7)) ("deprel" ('conllu-deprel 8)) ("deps" ('conllu-deps 9)) ("misc" ('conllu-misc 10)))))
+        chosen-cols)
+    (dolist (col columns)
+      (push (alist-get col col-dict) chosen-cols))
+    (destructuring-bind (syms ns) (conllu--unzip chosen-cols)
+      (conllu--hide-column (sort ns))
+      (conllu--add-to-invisibility-spec syms))))
+
+(defun conllu--hide-column (n)
+  "hides the nth column of conllu text"
+  (with-silent-modifications
+    (save-excursion
+      (beginning-of-buffer)
+      (while (not (eobp))
+        (if (conllu--not-looking-at-token)
+            (forward-line)
+          (progn
+            (dotimes (col n)
+              (conllu-field-forward))
+            (let ((start-field (point))
+                  (end-field (conllu--field-end-point)))
+              (put-text-property start-field end-field 'conllu-col t))
+            (beginning-of-line 2)))))))
+
+(defun conllu--unzip (alist)
+  "Return a list of all keys and a list of all values in ALIST.
+Returns '(KEYLIST VALUELIST) where KEYLIST and VALUELIST contain all the keys
+and values in ALIST in order, including repeats. The original alist can be
+reconstructed with
+    (asoc-zip KEYLIST VALUELIST)
+function taken from the asoc.el package by troyp: https://github.com/troyp/asoc.el"
+  (let ( keylist
+         valuelist
+         (rest      (reverse alist)) )
+    (while rest
+      (let ((pair (car rest)))
+        (push (car pair) keylist)
+        (push (cdr pair) valuelist)
+        (setq rest (cdr rest))))
+    (list keylist valuelist)))
 
 (provide 'conllu-align)
 
