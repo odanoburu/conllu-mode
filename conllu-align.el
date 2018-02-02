@@ -82,8 +82,7 @@
         (goto-char (point-min))
         (while (not (eobp))             ; for each token...
           (unless (conllu--not-looking-at-token)
-            (let ((w widths)
-                  (column 0))    ;Desired position of left-side of this column.
+            (let ((w widths))
               (while (and w (not (eolp)))
                 (let* ((beg (point))
                        (align-padding (if (bolp) 0
