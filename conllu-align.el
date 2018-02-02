@@ -150,17 +150,24 @@
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
 
+(defgroup conllu-align-group
+  nil
+  "group for conllu-align.el customizations."
+  :group 'data)
+
 (defcustom conllu-align-padding 1
   "Aligned field spacing: must be a positive integer.
 Number of spaces used by `conllu--align-fields' after separators."
-  :type 'integer)
+  :type 'integer
+  :group 'conllu-align-group)
 
 (defcustom conllu-align-style 'left
   "Aligned field style: one of `left', `centre', `right' or `auto'.
 Alignment style used by `conllu-align-fields'.
 Auto-alignment means left align text and right align numbers."
   :type '(choice (const left) (const centre)
-                 (const right) (const auto)))
+                 (const right) (const auto))
+  :group 'conllu-align-group)
 
 (provide 'conllu-align)
 
