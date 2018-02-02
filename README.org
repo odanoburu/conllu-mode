@@ -54,8 +54,6 @@ you can watch the following demo for an idea of what it can do:
   in your =.emacs=:
 #+BEGIN_SRC elisp
 (add-to-list 'load-path "~/some/path/conllu-mode")
-;; optionally, for better performance:
-(byte-recompile-directory "~/some/path/conllu-mode" 0)
 (require 'conllu-mode)
 #+END_SRC
 
