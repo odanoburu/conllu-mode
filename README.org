@@ -3,6 +3,10 @@
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
+you can watch the following demo for an idea of what it can do:
+
+[[https://asciinema.org/a/vO51IVyAeKBF1uSB1ogzCXcCb][file:static/demo.png]]
+
 * default key bindings
 
 | key binding | description                                                                                          |
@@ -25,27 +29,33 @@ files.
 - in a token line, jump to its =head=
 
 * missing
+  if you'd like to have a feature implemented, you should file at
+  ticket at the [[https://github.com/odanoburu/conllu-mode/issues][issue tracker]]. here is our wishlist of what we would
+  like to implement in the future:
 
 - hiding columns
 - call a parser to create CoNLL-U output from a sentence
 - call external visualization tool
-- in a sentence, jump to token that has a given index
-- in sentence, jump to next token that has a given =upostag=
-- in sentence, jump to next token that has a given =deprel=
-# are the above two really interesting? an incremental search forward
-# would probably be enough
+- validating CoNLL-U file
+# - in a sentence, jump to token that has a given index
+# - in sentence, jump to next token that has a given =upostag=
+# - in sentence, jump to next token that has a given =deprel=
+# are the above three really interesting? emacs can do better with
+# incremental search and other functionality
 - ...
   
 * installation
   clone the repo and put these files where emacs will load them, as
   in:
 #+BEGIN_SRC sh
-  git clone https://github.com/odanoburu/conllu-mode
-  cp *.el ~/some/path/
+  $ cd ~/some/path/
+  $ git clone https://github.com/odanoburu/conllu-mode
 #+END_SRC
   in your =.emacs=:
 #+BEGIN_SRC elisp
-(add-to-list 'load-path "~/some/path/")
+(add-to-list 'load-path "~/some/path/conllu-mode")
+;; optionally, for better performance:
+(byte-recompile-directory "~/some/path/conllu-mode" 0)
 (require 'conllu-mode)
 #+END_SRC
 

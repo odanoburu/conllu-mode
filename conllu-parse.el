@@ -48,7 +48,7 @@
 (defun conllu--index ()
   (conllu--symbol
    (lambda ()
-     (string-to-int
+     (string-to-number
       (parsec-many-as-string (parsec-digit))))))
 
 (defun conllu--meta-separator ()

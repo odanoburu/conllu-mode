@@ -85,8 +85,7 @@
         (goto-char (point-min))
         (while (not (eobp))             ; for each token...
           (unless (conllu--not-looking-at-token)
-            (let ((w widths)
-                  (column 0))    ;Desired position of left-side of this column.
+            (let ((w widths))
               (while (and w (not (eolp)))
                 (let* ((beg (point))
                        (align-padding (if (bolp) 0
@@ -95,7 +94,7 @@
                        (right-padding 0)
                        (field-width
                         (- (- (current-column)
-                              (progn (conllu--looking-at-end-of-field) (current-column)))))
+                              (progn (conllu--skip-to-end-of-field) (current-column)))))
                        (column-width (pop w))
                        (x (- column-width field-width))) ; Required padding.
                   (set-marker end (point)) ; End of current field.
@@ -154,17 +153,24 @@
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
 
+(defgroup conllu-align-group
+  nil
+  "group for conllu-align.el customizations."
+  :group 'data)
+
 (defcustom conllu-align-padding 1
   "Aligned field spacing: must be a positive integer.
 Number of spaces used by `conllu--align-fields' after separators."
-  :type 'integer)
+  :type 'integer
+  :group 'conllu-align-group)
 
 (defcustom conllu-align-style 'left
   "Aligned field style: one of `left', `centre', `right' or `auto'.
 Alignment style used by `conllu-align-fields'.
 Auto-alignment means left align text and right align numbers."
   :type '(choice (const left) (const centre)
-                 (const right) (const auto)))
+                 (const right) (const auto))
+  :group 'conllu-align-group)
 
 ;;;
 ;; hide columns
