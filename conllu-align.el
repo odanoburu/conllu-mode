@@ -44,7 +44,7 @@
                 (col (current-column))
                 x)
             (while (not (eolp))
-              (conllu--looking-at-end-of-field)
+              (conllu--skip-to-end-of-field)
               (setq x (- (current-column) col)) ; Field width.
               (if w
                   (if (> x (car w)) (setcar w x))
@@ -92,7 +92,7 @@
                        (right-padding 0)
                        (field-width
                         (- (- (current-column)
-                              (progn (conllu--looking-at-end-of-field) (current-column)))))
+                              (progn (conllu--skip-to-end-of-field) (current-column)))))
                        (column-width (pop w))
                        (x (- column-width field-width))) ; Required padding.
                   (set-marker end (point)) ; End of current field.

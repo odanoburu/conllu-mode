@@ -109,7 +109,7 @@ one). if root, moves to beginning of sentence"
 
 (defun conllu--move-to-token-line (n)
   "call with 1 or -1."
-  (when (conllu-not-looking-at-token)
+  (when (conllu--not-looking-at-token)
     (forward-line n)
     (conllu--move-to-token-line n)))
 
@@ -123,18 +123,26 @@ the next blank line."
 (defun conllu-next-sentence ()
   "unalign sentence at point, jump to next sentence and align it."
   (interactive)
-  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
+  (conllu-unalign-fields
+   (conllu--sentence-begin-point)
+   (conllu--sentence-end-point))
   (conllu-forward-sentence)
   (conllu-forward-to-token-line)
-  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
+  (conllu-align-fields
+   (conllu--sentence-begin-point)
+   (conllu--sentence-end-point)))
 
 (defun conllu-previous-sentence ()
   "unalign sentence at point, jump to next sentence and align it."
   (interactive)
-  (conllu-unalign-fields (sentence-begin-point) (sentence-end-point))
+  (conllu-unalign-fields
+   (conllu--sentence-begin-point)
+   (conllu--sentence-end-point))
   (backward-sentence)
   (conllu-backward-to-token-line)
-  (conllu-align-fields (sentence-begin-point) (sentence-end-point)))
+  (conllu-align-fields
+   (conllu--sentence-begin-point)
+   (conllu--sentence-end-point)))
 
 (provide 'conllu-move)
 
