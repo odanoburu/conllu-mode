@@ -3,6 +3,10 @@
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
+you can watch the following demo for an idea of what it can do:
+
+[[https://asciinema.org/a/vO51IVyAeKBF1uSB1ogzCXcCb][file:static/demo.png]]
+
 * default key bindings
 
 | key binding | description                                                                                          |
