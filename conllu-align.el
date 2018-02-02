@@ -31,7 +31,7 @@
   (save-excursion (forward-sentence) (point)))
 
 (defun conllu--field-end-point ()
-  (conllu-field-forward))
+  (conllu-field-forward) (point))
 
 (defun conllu--sentence-points ()
   (let ((start (conllu--sentence-begin-point))
@@ -174,33 +174,43 @@ Auto-alignment means left align text and right align numbers."
 
 ;;;
 ;; hide columns
-(defun conllu-hide-columns (&rest columns)
+(defun conllu-hide-columns (string-columns)
   "hides the columns specified (names should be lower-case,
 exactly the same as in the UD specification)."
-  (interactive)
-  (let ((col-dict (copy-tree '(("id" ('conllu-id 1)) ("form" ('conllu-form 2)) ("lemma" ('conllu-lemma 3)) ("upostag" ('conllu-upostag 4)) ("xpostag" ('conllu-xpostag 5)) ("feats" ('conllu-feats 6)) ("head" ('conllu-head 7)) ("deprel" ('conllu-deprel 8)) ("deps" ('conllu-deps 9)) ("misc" ('conllu-misc 10)))))
-        chosen-cols)
-    (dolist (col columns)
-      (push (alist-get col col-dict) chosen-cols))
+  (interactive "sColumns to hide: ")
+  (let ((col-dict (copy-tree '(("id" ('conllu-id 0)) ("form" ('conllu-form 1)) ("lemma" ('conllu-lemma 2)) ("upostag" ('conllu-upostag 3)) ("xpostag" ('conllu-xpostag 4)) ("feats" ('conllu-feats 5)) ("head" ('conllu-head 6)) ("deprel" ('conllu-deprel 7)) ("deps" ('conllu-deps 8)) ("misc" ('conllu-misc 9)))))
+        (chosen-cols (split-string string-columns))
+        cols-to-hide)
+    (dolist (col chosen-cols)
+      (push (cdr (assoc col col-dict)) cols-to-hide))
     (destructuring-bind (syms ns) (conllu--unzip chosen-cols)
-      (conllu--hide-column (sort ns))
+      (conllu--put-property-in-column 'invisible (car ns) (car syms)) ;; for now only one column, should accept a list
       (conllu--add-to-invisibility-spec syms))))
 
-(defun conllu--hide-column (n)
-  "hides the nth column of conllu text"
+(defun conllu--put-property-in-column (prop col-n sym)
+  "puts property prop with value sym in the column number col-n
+of the file."
   (with-silent-modifications
     (save-excursion
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (while (not (eobp))
         (if (conllu--not-looking-at-token)
             (forward-line)
           (progn
-            (dotimes (col n)
+            (dotimes (_ col-n)
               (conllu-field-forward))
             (let ((start-field (point))
                   (end-field (conllu--field-end-point)))
-              (put-text-property start-field end-field 'conllu-col t))
+              (put-text-property start-field end-field prop sym)) ;; conllu-col should depend on the specified column
             (beginning-of-line 2)))))))
+
+(defun conllu--add-to-invisibility-spec (syms)
+  "transforms the list of symbols in a list of cons cells with t
+as cdr (this makes the invisible characters display as an
+ellipsis), and then adds them to the invisibility-spec."
+  (let ((syms-list (mapcar (lambda (sym) (cons sym t)) syms)))
+    (dolist (sym-asoc syms-list)
+      (add-to-invisibility-spec sym-asoc))))
 
 (defun conllu--unzip (alist)
   "Return a list of all keys and a list of all values in ALIST.
@@ -208,7 +218,7 @@ Returns '(KEYLIST VALUELIST) where KEYLIST and VALUELIST contain all the keys
 and values in ALIST in order, including repeats. The original alist can be
 reconstructed with
     (asoc-zip KEYLIST VALUELIST)
-function taken from the asoc.el package by troyp: https://github.com/troyp/asoc.el"
+NOTE: function taken from the asoc.el package by troyp: https://github.com/troyp/asoc.el"
   (let ( keylist
          valuelist
          (rest      (reverse alist)) )
