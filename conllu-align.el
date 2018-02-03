@@ -25,13 +25,18 @@
 (require 'conllu-move)
 
 (defun conllu--sentence-begin-point ()
-  (save-excursion (backward-sentence) (point)))
+  (save-excursion
+    (backward-sentence)
+    (point)))
 
 (defun conllu--sentence-end-point ()
-  (save-excursion (forward-sentence) (point)))
+  (save-excursion
+    (forward-sentence)
+    (point)))
 
 (defun conllu--field-end-point ()
-  (conllu-field-forward) (point))
+  (conllu-field-forward)
+  (point))
 
 (defun conllu--sentence-points ()
   (let ((start (conllu--sentence-begin-point))
@@ -174,6 +179,20 @@ Auto-alignment means left align text and right align numbers."
 
 ;;;
 ;; hide columns
+
+;; change algorithm: instead of marking only the selected columns,
+;; mark them all at once. subsequente calls to hide-columns (if any)
+;; can just toggle the visibility-spec instead of going all over the
+;; buffer again.
+
+;; TODO make it work when misc is selected. currently this will
+;; collapse the line on the next one, which we don't want.
+
+;; TODO how well does it work in conjunction with column alignment?
+
+;; TODO make navigation better? docs said point would automagically
+;; move from invisible region, but the effect is not exactly what I
+;; expected.
 (defun conllu-hide-columns (string-columns)
   "hides the columns specified (names should be lower-case,
 exactly the same as in the UD specification)."
@@ -182,9 +201,9 @@ exactly the same as in the UD specification)."
         (chosen-cols (split-string string-columns))
         cols-to-hide)
     (dolist (col chosen-cols)
-      (push (cdr (assoc col col-dict)) cols-to-hide))
-    (destructuring-bind (syms ns) (conllu--unzip chosen-cols)
-      (conllu--put-property-in-column 'invisible (car ns) (car syms)) ;; for now only one column, should accept a list
+      (push (cadr (assoc col col-dict)) cols-to-hide))
+    (destructuring-bind (syms ns) (conllu--unzip cols-to-hide)
+      (conllu--put-property-in-column 'invisible (caar ns) (car syms)) ;; for now only one column, should accept a list
       (conllu--add-to-invisibility-spec syms))))
 
 (defun conllu--put-property-in-column (prop col-n sym)
@@ -201,7 +220,7 @@ of the file."
               (conllu-field-forward))
             (let ((start-field (point))
                   (end-field (conllu--field-end-point)))
-              (put-text-property start-field end-field prop sym)) ;; conllu-col should depend on the specified column
+              (put-text-property start-field end-field prop sym))
             (beginning-of-line 2)))))))
 
 (defun conllu--add-to-invisibility-spec (syms)
@@ -209,8 +228,8 @@ of the file."
 as cdr (this makes the invisible characters display as an
 ellipsis), and then adds them to the invisibility-spec."
   (let ((syms-list (mapcar (lambda (sym) (cons sym t)) syms)))
-    (dolist (sym-asoc syms-list)
-      (add-to-invisibility-spec sym-asoc))))
+    (dolist (sym-pair syms-list)
+      (add-to-invisibility-spec sym-pair))))
 
 (defun conllu--unzip (alist)
   "Return a list of all keys and a list of all values in ALIST.
