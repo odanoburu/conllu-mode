@@ -35,7 +35,10 @@
     (point)))
 
 (defun conllu--field-end-point ()
-  (conllu-field-forward)
+  "doesn't save excursion"
+  (conllu--skip-to-end-of-field)
+  (unless (eolp)
+    (forward-char))
   (point))
 
 (defun conllu--sentence-points ()
@@ -178,37 +181,67 @@ Auto-alignment means left align text and right align numbers."
   :group 'conllu-align-group)
 
 ;;;
-;; hide columns
+;; hide fields
 
-;; change algorithm: instead of marking only the selected columns,
-;; mark them all at once. subsequente calls to hide-columns (if any)
-;; can just toggle the visibility-spec instead of going all over the
-;; buffer again.
-
-;; TODO make it work when misc is selected. currently this will
-;; collapse the line on the next one, which we don't want.
-
-;; TODO how well does it work in conjunction with column alignment?
+;; TODO can the invisible property be messed up by a lot of heavy
+;; editing? if how so, have something reset it
 
 ;; TODO make navigation better? docs said point would automagically
 ;; move from invisible region, but the effect is not exactly what I
 ;; expected.
-(defun conllu-hide-columns (string-columns)
-  "hides the columns specified (names should be lower-case,
-exactly the same as in the UD specification)."
-  (interactive "sColumns to hide: ")
-  (let ((col-dict (copy-tree '(("id" ('conllu-id 0)) ("form" ('conllu-form 1)) ("lemma" ('conllu-lemma 2)) ("upostag" ('conllu-upostag 3)) ("xpostag" ('conllu-xpostag 4)) ("feats" ('conllu-feats 5)) ("head" ('conllu-head 6)) ("deprel" ('conllu-deprel 7)) ("deps" ('conllu-deps 8)) ("misc" ('conllu-misc 9)))))
-        (chosen-cols (split-string string-columns))
-        cols-to-hide)
-    (dolist (col chosen-cols)
-      (push (cadr (assoc col col-dict)) cols-to-hide))
-    (destructuring-bind (syms ns) (conllu--unzip cols-to-hide)
-      (conllu--put-property-in-column 'invisible (caar ns) (car syms)) ;; for now only one column, should accept a list
-      (conllu--add-to-invisibility-spec syms))))
+(defvar conllu--invisible-property-put nil
+  "set to t in the current buffer when `conllu-hide-columns' is
+  called the first time. once the invisible property has been put
+  on each column, we simply need to toggle the invisibility spec
+  for each value, instead of going all over the text again
+  changing property values.")
 
-(defun conllu--put-property-in-column (prop col-n sym)
-  "puts property prop with value sym in the column number col-n
-of the file."
+(defun conllu--field-symbols ()
+  (list 'conllu-id 'conllu-form 'conllu-lemma 'conllu-upostag
+      'conllu-xpostag 'conllu-feats 'conllu-head 'conllu-deprel
+      'conllu-deps 'conllu-misc))
+
+(defun conllu--field-strings ()
+  (list "id" "form" "lemma" "upostag" "xpostag" "feats" "head" "deprel" "deps" "misc"))
+
+(defun conllu--fields-alist ()
+  (mapcar* (lambda (a b) (cons a b))
+           (conllu--field-strings) (conllu--field-symbols)))
+
+(defun conllu-show-fields (string-columns)
+  (interactive "sFields to show (RET for unhiding all fields):")
+  (let (selected-fields)
+    (if (string= string-columns "")
+        (setq selected-fields (conllu--field-symbols))
+      (setq selected-fields (conllu--string-to-fields string-columns)))
+      (conllu-rm-from-invisibility-spec selected-fields)))
+
+(defun conllu-hide-fields (string-columns)
+  "hides the fields specified (names should be lower-case,
+exactly the same as in the UD specification, and separated by
+spaces)."
+  (interactive "sFields to hide: ")
+  (let ((selected-fields (conllu--string-to-fields string-columns)))
+    (unless conllu--invisible-property-put
+      (conllu--put-property-in-fields
+       'invisible (conllu--field-symbols))
+      (setq-local conllu--invisible-property-put t))
+    (conllu--add-to-invisibility-spec selected-fields)))
+
+(defun conllu--string-to-fields (fields-str)
+  (let ((field-sym-alist (conllu--fields-alist))
+        (selected-fields-str (split-string (downcase fields-str)))
+        selected-fields-sym)
+    (dolist (field selected-fields-str)
+      (push (cdr (assoc field field-sym-alist)) selected-fields-sym))
+    (when (/= (length selected-fields-str) (length (remove-if #'null selected-fields-sym)))
+      (user-error "%s" "Error: didn't understand some of the specified fields. Fields must be separated by spaces, as in:\nform feats id"))
+    selected-fields-sym))
+
+(defun conllu--put-property-in-fields (prop values)
+  "puts property prop in each field of the file. the value of the
+property in each field corresponds to an element in values, so
+that (= (length values) number-of-fields) must hold."
   (with-silent-modifications
     (save-excursion
       (goto-char (point-min))
@@ -216,20 +249,30 @@ of the file."
         (if (conllu--not-looking-at-token)
             (forward-line)
           (progn
-            (dotimes (_ col-n)
-              (conllu-field-forward))
-            (let ((start-field (point))
-                  (end-field (conllu--field-end-point)))
-              (put-text-property start-field end-field prop sym))
-            (beginning-of-line 2)))))))
+            (conllu--put-property-in-fields-token-line
+                                           prop values)))))))
+
+(defun conllu--put-property-in-fields-token-line (prop values)
+  (dolist (val values)
+    (let ((start-field (point))
+          (end-field (conllu--field-end-point)))
+      (put-text-property start-field end-field prop val))))
 
 (defun conllu--add-to-invisibility-spec (syms)
+  (conllu--toggle-invisibility-spec #'add-to-invisibility-spec  syms))
+
+(defun conllu-rm-from-invisibility-spec (syms)
+  (conllu--toggle-invisibility-spec
+   #'remove-from-invisibility-spec syms))
+
+(defun conllu--toggle-invisibility-spec (add-rm-func syms)
   "transforms the list of symbols in a list of cons cells with t
 as cdr (this makes the invisible characters display as an
-ellipsis), and then adds them to the invisibility-spec."
+ellipsis), and then adds/removes them to the invisibility-spec,
+according to function passed."
   (let ((syms-list (mapcar (lambda (sym) (cons sym t)) syms)))
     (dolist (sym-pair syms-list)
-      (add-to-invisibility-spec sym-pair))))
+      (funcall add-rm-func sym-pair))))
 
 (defun conllu--unzip (alist)
   "Return a list of all keys and a list of all values in ALIST.

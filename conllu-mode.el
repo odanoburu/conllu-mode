@@ -43,6 +43,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
     (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
+    (define-key map [(control ?c) (control ?f)] 'conllu-hide-fields)
+    (define-key map [(control ?c) (control ?s)] 'conllu-show-fields)
     (define-key map [(control ?c) (control ?h)] 'conllu-move-to-head)
     (define-key map [(control ?c) ?f] 'conllu-field-forward)
     (define-key map [(control ?c) ?b] 'conllu-field-backward)
