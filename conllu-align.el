@@ -37,9 +37,7 @@
 (defun conllu--field-end-point ()
   "doesn't save excursion"
   (conllu--skip-to-end-of-field)
-  (unless (eolp)
-    (forward-char))
-  (point))
+  (prog1 (point) (forward-char)))
 
 (defun conllu--sentence-points ()
   (let ((start (conllu--sentence-begin-point))
@@ -214,7 +212,7 @@ Auto-alignment means left align text and right align numbers."
     (if (string= string-columns "")
         (setq selected-fields (conllu--field-symbols))
       (setq selected-fields (conllu--string-to-fields string-columns)))
-      (conllu-rm-from-invisibility-spec selected-fields)))
+    (conllu-rm-from-invisibility-spec selected-fields)))
 
 (defun conllu-hide-fields (string-columns)
   "hides the fields specified (names should be lower-case,
@@ -248,9 +246,7 @@ that (= (length values) number-of-fields) must hold."
       (while (not (eobp))
         (if (conllu--not-looking-at-token)
             (forward-line)
-          (progn
-            (conllu--put-property-in-fields-token-line
-                                           prop values)))))))
+            (conllu--put-property-in-fields-token-line prop values))))))
 
 (defun conllu--put-property-in-fields-token-line (prop values)
   (dolist (val values)
