@@ -25,10 +25,21 @@
 (require 'conllu-move)
 
 (defun conllu--sentence-begin-point ()
-  (save-excursion (backward-sentence) (point)))
+  (save-excursion
+    (backward-sentence)
+    (point)))
 
 (defun conllu--sentence-end-point ()
-  (save-excursion (forward-sentence) (point)))
+  (save-excursion
+    (forward-sentence)
+    (point)))
+
+(defun conllu--field-end-point ()
+  "doesn't save excursion"
+  (conllu--skip-to-end-of-field)
+  (unless (eolp)
+    (forward-char))
+  (point))
 
 (defun conllu--sentence-points ()
   (let ((start (conllu--sentence-begin-point))
@@ -168,6 +179,117 @@ Auto-alignment means left align text and right align numbers."
   :type '(choice (const left) (const centre)
                  (const right) (const auto))
   :group 'conllu-align-group)
+
+;;;
+;; hide fields
+
+;; TODO can the invisible property be messed up by a lot of heavy
+;; editing? if how so, have something reset it
+
+;; TODO make navigation better? docs said point would automagically
+;; move from invisible region, but the effect is not exactly what I
+;; expected.
+(defvar conllu--invisible-property-put nil
+  "set to t in the current buffer when `conllu-hide-columns' is
+  called the first time. once the invisible property has been put
+  on each column, we simply need to toggle the invisibility spec
+  for each value, instead of going all over the text again
+  changing property values.")
+
+(defun conllu--field-symbols ()
+  (list 'conllu-id 'conllu-form 'conllu-lemma 'conllu-upostag
+      'conllu-xpostag 'conllu-feats 'conllu-head 'conllu-deprel
+      'conllu-deps 'conllu-misc))
+
+(defun conllu--field-strings ()
+  (list "id" "form" "lemma" "upostag" "xpostag" "feats" "head" "deprel" "deps" "misc"))
+
+(defun conllu--fields-alist ()
+  (mapcar* (lambda (a b) (cons a b))
+           (conllu--field-strings) (conllu--field-symbols)))
+
+(defun conllu-show-fields (string-columns)
+  (interactive "sFields to show (RET for unhiding all fields):")
+  (let (selected-fields)
+    (if (string= string-columns "")
+        (setq selected-fields (conllu--field-symbols))
+      (setq selected-fields (conllu--string-to-fields string-columns)))
+      (conllu-rm-from-invisibility-spec selected-fields)))
+
+(defun conllu-hide-fields (string-columns)
+  "hides the fields specified (names should be lower-case,
+exactly the same as in the UD specification, and separated by
+spaces)."
+  (interactive "sFields to hide: ")
+  (let ((selected-fields (conllu--string-to-fields string-columns)))
+    (unless conllu--invisible-property-put
+      (conllu--put-property-in-fields
+       'invisible (conllu--field-symbols))
+      (setq-local conllu--invisible-property-put t))
+    (conllu--add-to-invisibility-spec selected-fields)))
+
+(defun conllu--string-to-fields (fields-str)
+  (let ((field-sym-alist (conllu--fields-alist))
+        (selected-fields-str (split-string (downcase fields-str)))
+        selected-fields-sym)
+    (dolist (field selected-fields-str)
+      (push (cdr (assoc field field-sym-alist)) selected-fields-sym))
+    (when (/= (length selected-fields-str) (length (remove-if #'null selected-fields-sym)))
+      (user-error "%s" "Error: didn't understand some of the specified fields. Fields must be separated by spaces, as in:\nform feats id"))
+    selected-fields-sym))
+
+(defun conllu--put-property-in-fields (prop values)
+  "puts property prop in each field of the file. the value of the
+property in each field corresponds to an element in values, so
+that (= (length values) number-of-fields) must hold."
+  (with-silent-modifications
+    (save-excursion
+      (goto-char (point-min))
+      (while (not (eobp))
+        (if (conllu--not-looking-at-token)
+            (forward-line)
+          (progn
+            (conllu--put-property-in-fields-token-line
+                                           prop values)))))))
+
+(defun conllu--put-property-in-fields-token-line (prop values)
+  (dolist (val values)
+    (let ((start-field (point))
+          (end-field (conllu--field-end-point)))
+      (put-text-property start-field end-field prop val))))
+
+(defun conllu--add-to-invisibility-spec (syms)
+  (conllu--toggle-invisibility-spec #'add-to-invisibility-spec  syms))
+
+(defun conllu-rm-from-invisibility-spec (syms)
+  (conllu--toggle-invisibility-spec
+   #'remove-from-invisibility-spec syms))
+
+(defun conllu--toggle-invisibility-spec (add-rm-func syms)
+  "transforms the list of symbols in a list of cons cells with t
+as cdr (this makes the invisible characters display as an
+ellipsis), and then adds/removes them to the invisibility-spec,
+according to function passed."
+  (let ((syms-list (mapcar (lambda (sym) (cons sym t)) syms)))
+    (dolist (sym-pair syms-list)
+      (funcall add-rm-func sym-pair))))
+
+(defun conllu--unzip (alist)
+  "Return a list of all keys and a list of all values in ALIST.
+Returns '(KEYLIST VALUELIST) where KEYLIST and VALUELIST contain all the keys
+and values in ALIST in order, including repeats. The original alist can be
+reconstructed with
+    (asoc-zip KEYLIST VALUELIST)
+NOTE: function taken from the asoc.el package by troyp: https://github.com/troyp/asoc.el"
+  (let ( keylist
+         valuelist
+         (rest      (reverse alist)) )
+    (while rest
+      (let ((pair (car rest)))
+        (push (car pair) keylist)
+        (push (cdr pair) valuelist)
+        (setq rest (cdr rest))))
+    (list keylist valuelist)))
 
 (provide 'conllu-align)
 
