@@ -48,7 +48,7 @@
 ;;;
 ;; misc
 (defvar conllu-tab-width 2
-  "Width of a tab in conllu-mode.")
+  "Width of a tab in ‘conllu-mode’.")
 
 ;;;
 ;; keymap
@@ -63,7 +63,7 @@
     (define-key map [(meta ?n)] 'conllu-next-sentence)
     (define-key map [(meta ?p)] 'conllu-previous-sentence)
     map)
-  "Keymap for conllu-mode.")
+  "Keymap for ‘conllu-mode’.")
 
 ;;;
 ;; syntax table
@@ -75,7 +75,7 @@
     (modify-syntax-entry ?# "<" st) ; begins comment
     (modify-syntax-entry ?\n ">" st) ; ends comment
     st)
-  "Syntax table for conllu-mode.")
+  "Syntax table for ‘conllu-mode’.")
 
 ;;;
 ;; fonts
@@ -90,7 +90,7 @@
 (defvar conllu-font-lock-defaults
   `((( ,(regexp-opt conllu-keywords 'words) . font-lock-builtin-face)
      ( ,(regexp-opt conllu-constants 'words) . font-lock-constant-face)))
-  "Default font locks for conllu-mode.")
+  "Default font locks for ‘conllu-mode’.")
 
 ;;;
 ;; derive mode

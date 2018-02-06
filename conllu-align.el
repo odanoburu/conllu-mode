@@ -37,13 +37,18 @@
 
 (require 'conllu-move)
 
+;;; Code:
+
 (defun conllu--sentence-begin-point ()
+  "Return point of the beginning of current sentence."
   (save-excursion (backward-sentence) (point)))
 
 (defun conllu--sentence-end-point ()
+  "Return point of the end of current sentence."
   (save-excursion (forward-sentence) (point)))
 
 (defun conllu--sentence-points ()
+  "Return points that delimit current sentence."
   (let ((start (conllu--sentence-begin-point))
         (end (conllu--sentence-end-point)))
     (list start end)))
@@ -79,8 +84,8 @@
   (and (overlay-get o 'conllu) (delete-overlay o)))
 
 (defun conllu-align-fields (beg end)
-  "Align fields in the current region. BEG and END must be point
-values."
+  "Align fields in the current region.
+BEG and END must be point values."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (conllu--sentence-points))) ; if interactive, by default
@@ -154,8 +159,8 @@ values."
   (set-marker end nil))
 
 (defun conllu-unalign-fields (beg end)
-  "Unalign fields in the current region. BEG and END must be
-point values."
+  "Unalign fields in the current region.
+BEG and END must be point values."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (conllu--sentence-points)))
