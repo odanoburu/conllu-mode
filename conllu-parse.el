@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl-lib))
+;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,18 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; this mode provides simple utilities for editing and viewing CoNLL-U files.
+
+;; it offers the following features, and more:
+
+;; - highlighting comments, and upostag and deprel fields
+;; - truncate lines by default
+;; - show newline and tab characters using whitespace.el
+;; - aligning and unaligning column fields
+;; - jumping to next or previous sentence
+;; - in a token line, jump to its head
 
 (defun conllu--spaces ()
   (parsec-optional*

@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl-lib))
+;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of one finds in csv-mode.el.
 
@@ -21,6 +21,19 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; this mode provides simple utilities for editing and viewing CoNLL-U
+;; files.
+
+;; it offers the following features, and more:
+
+;; - highlighting comments, and upostag and deprel fields
+;; - truncate lines by default
+;; - show newline and tab characters using whitespace.el
+;; - aligning and unaligning column fields
+;; - jumping to next or previous sentence
+;; - in a token line, jump to its head
 
 (require 'conllu-move)
 
@@ -66,6 +79,8 @@
   (and (overlay-get o 'conllu) (delete-overlay o)))
 
 (defun conllu-align-fields (beg end)
+  "Align fields in the current region. BEG and END must be point
+values."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (conllu--sentence-points))) ; if interactive, by default
@@ -134,14 +149,13 @@
                             (overlay-put
                              overlay
                              'after-string (make-string right-padding ?\ )))
-                        (forward-char))) ; Skip separator.
-
-                   ))))
+                        (forward-char))))))) ;; skip separator
           (forward-line)))))
   (set-marker end nil))
 
 (defun conllu-unalign-fields (beg end)
-  ""
+  "Unalign fields in the current region. BEG and END must be
+point values."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (conllu--sentence-points)))
@@ -152,19 +166,20 @@
 
 (defgroup conllu-align-group
   nil
-  "group for conllu-align.el customizations."
+  "Group for conllu-align.el customizations."
   :group 'data)
 
 (defcustom conllu-align-padding 1
   "Aligned field spacing: must be a positive integer.
-Number of spaces used by `conllu--align-fields' after separators."
+Number of spaces used by `conllu--align-fields' after
+separators."
   :type 'integer
   :group 'conllu-align-group)
 
 (defcustom conllu-align-style 'left
   "Aligned field style: one of `left', `centre', `right' or `auto'.
-Alignment style used by `conllu-align-fields'.
-Auto-alignment means left align text and right align numbers."
+Alignment style used by `conllu-align-fields'.  Auto-alignment
+means left align text and right align numbers."
   :type '(choice (const left) (const centre)
                  (const right) (const auto))
   :group 'conllu-align-group)

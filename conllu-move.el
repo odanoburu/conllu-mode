@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24") (whitespace "13") (parsec) (cl-lib))
+;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,19 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+;; this mode provides simple utilities for editing and viewing CoNLL-U
+;; files.
+
+;; it offers the following features, and more:
+
+;; - highlighting comments, and upostag and deprel fields
+;; - truncate lines by default
+;; - show newline and tab characters using whitespace.el
+;; - aligning and unaligning column fields
+;; - jumping to next or previous sentence
+;; - in a token line, jump to its head
+
 (require 'conllu-parse)
 
 (require 'cl-lib)
@@ -32,13 +45,13 @@
   (skip-chars-forward "^[\t\n]"))
 
 (defun conllu-field-forward ()
-  "move to next field. if at end of sentence, go to next line."
+  "Move to next field. if at end of sentence, go to next line."
   (interactive)
   (conllu--skip-to-end-of-field)
   (forward-char))
 
 (defun conllu-field-backward ()
-  "move to previous field. if at beginning of sentence, go to
+  "Move to previous field. if at beginning of sentence, go to
 previous line"
   (interactive)
   (skip-chars-backward "^[\t\n]")
@@ -72,8 +85,8 @@ otherwise. assumes point is at beginning of line."
 
 ;< move to token head
 (defun conllu-move-to-head ()
-  "moves point to the head token of the present token (if it has
-one). if root, moves to beginning of sentence"
+  "Move point to the head token of the present token (if it has
+one). if root, moves to beginning of sentence."
   (interactive)
   (beginning-of-line)
   (when (conllu--not-looking-at-token)
@@ -100,11 +113,11 @@ one). if root, moves to beginning of sentence"
 ;;;
 ;; sentence
 (defun conllu-forward-to-token-line ()
-  "move to next token line."
+  "Move to next token line."
   (conllu--move-to-token-line 1))
 
 (defun conllu-backward-to-token-line ()
-  "move to previous token line."
+  "Move to previous token line."
   (conllu--move-to-token-line -1))
 
 (defun conllu--move-to-token-line (n)
@@ -114,14 +127,15 @@ one). if root, moves to beginning of sentence"
     (conllu--move-to-token-line n)))
 
 (defun conllu-forward-sentence ()
-  "jump to end of sentence, which in CoNLL-U files is actually
+  "Jump to end of sentence, which in CoNLL-U files is actually
 the next blank line."
   (interactive)
   (forward-sentence)
   (forward-line))
 
 (defun conllu-next-sentence ()
-  "unalign sentence at point, jump to next sentence and align it."
+  "Unalign sentence at point, jump to next sentence and align
+it."
   (interactive)
   (conllu-unalign-fields
    (conllu--sentence-begin-point)
@@ -133,7 +147,8 @@ the next blank line."
    (conllu--sentence-end-point)))
 
 (defun conllu-previous-sentence ()
-  "unalign sentence at point, jump to next sentence and align it."
+  "Unalign sentence at point, jump to next sentence and align
+it."
   (interactive)
   (conllu-unalign-fields
    (conllu--sentence-begin-point)
