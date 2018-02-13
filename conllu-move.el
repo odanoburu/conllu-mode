@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.0.1
+;; Version: 0.0.3
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
@@ -35,13 +35,12 @@
 ;; - in a token line, jump to its head
 
 (require 'conllu-parse)
-
 (require 'cl-lib)
+
+;;; Code:
 
 ;;;
 ;; fields
-;;; Code:
-
 (defsubst conllu--skip-to-end-of-field ()
   "Skip forward over one field."
   (skip-chars-forward "^[\t\n]"))
@@ -91,13 +90,19 @@ assumes point is at beginning of line."
 if root, moves to beginning of sentence."
   (interactive)
   (beginning-of-line)
-  (when (conllu--not-looking-at-token)
-    (user-error "%s" "Error: not on token line"))
-  (destructuring-bind (ix _ _ _ _ _ _ _ h _ _ _)
+  (cond ((conllu--not-looking-at-token)
+         (user-error "%s" "Error: not on token line"))
+        ((conllu--looking-at-mtoken)
+         (user-error "%s" "Error: multiword token has no HEAD"))
+        ((conllu--looking-at-etoken)
+         (user-error "%s" "Error: empty token has no HEAD")))
+  (cl-destructuring-bind (ix ms oi fo l u x fe h dr ds m)
       (parsec-parse (conllu--token))
     (forward-line -1) ;; back to parsed line
-    (when (member h (list "_" 0))
-      (user-error "%s" "Error: token has no head"))
+    (cond ((equal h "_")
+           (user-error "%s" "Error: token has no head"))
+          ((equal h 0)
+           (user-error "%s" "Error: ROOT")))
     (conllu--move-to-existing-head ix h)))
 
 (defun conllu--move-to-existing-head (ix head)

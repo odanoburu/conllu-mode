@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.0.1
+;; Version: 0.0.3
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of one finds in csv-mode.el.
@@ -38,6 +38,26 @@
 (require 'conllu-move)
 
 ;;; Code:
+
+(defgroup conllu-align-group
+  nil
+  "Group for conllu-align.el customizations."
+  :group 'data)
+
+(defcustom conllu-align-padding 1
+  "Aligned field spacing: must be a positive integer.
+Number of spaces used by `conllu--align-fields' after
+separators."
+  :type 'integer
+  :group 'conllu-align-group)
+
+(defcustom conllu-align-style 'left
+  "Aligned field style: one of `left', `centre', `right' or `auto'.
+Alignment style used by `conllu-align-fields'.  Auto-alignment
+means left align text and right align numbers."
+  :type '(choice (const left) (const centre)
+                 (const right) (const auto))
+  :group 'conllu-align-group)
 
 (defun conllu--sentence-begin-point ()
   "Return point of the beginning of current sentence."
@@ -168,26 +188,6 @@ BEG and END must be point values."
   (mapc #'conllu--delete-overlay (overlays-in beg end))
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
-
-(defgroup conllu-align-group
-  nil
-  "Group for conllu-align.el customizations."
-  :group 'data)
-
-(defcustom conllu-align-padding 1
-  "Aligned field spacing: must be a positive integer.
-Number of spaces used by `conllu--align-fields' after
-separators."
-  :type 'integer
-  :group 'conllu-align-group)
-
-(defcustom conllu-align-style 'left
-  "Aligned field style: one of `left', `centre', `right' or `auto'.
-Alignment style used by `conllu-align-fields'.  Auto-alignment
-means left align text and right align numbers."
-  :type '(choice (const left) (const centre)
-                 (const right) (const auto))
-  :group 'conllu-align-group)
 
 (provide 'conllu-align)
 

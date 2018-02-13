@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.0.1
+;; Version: 0.0.3
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
@@ -42,6 +42,7 @@
 (require 'conllu-move)
 (require 'conllu-parse)
 
+(require 'whitespace)
 (require 'cl-lib)
 (require 'parsec)
 
