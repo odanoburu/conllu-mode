@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.0.3
+;; Version: 0.1.0
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
@@ -58,8 +58,16 @@
     (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
     (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
     (define-key map [(control ?c) (control ?h)] 'conllu-move-to-head)
-    (define-key map [(control ?c) ?f] 'conllu-field-forward)
-    (define-key map [(control ?c) ?b] 'conllu-field-backward)
+    (define-key map [(control ?c) ?1] 'conllu-field-number-1)
+    (define-key map [(control ?c) ?2] 'conllu-field-number-2)
+    (define-key map [(control ?c) ?3] 'conllu-field-number-3)
+    (define-key map [(control ?c) ?4] 'conllu-field-number-4)
+    (define-key map [(control ?c) ?5] 'conllu-field-number-5)
+    (define-key map [(control ?c) ?6] 'conllu-field-number-6)
+    (define-key map [(control ?c) ?7] 'conllu-field-number-7)
+    (define-key map [(control ?c) ?8] 'conllu-field-number-8)
+    (define-key map [(control ?c) ?9] 'conllu-field-number-9)
+    (define-key map [(control ?c) ?0] 'conllu-field-number-10)
     (define-key map [(meta ?e)] 'conllu-forward-sentence)
     (define-key map [(meta ?n)] 'conllu-next-sentence)
     (define-key map [(meta ?p)] 'conllu-previous-sentence)
