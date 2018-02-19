@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.0.3
+;; Version: 0.1.0
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
@@ -46,10 +46,68 @@
   (skip-chars-forward "^[\t\n]"))
 
 (defun conllu-field-forward ()
-  "Move to next field.  if at end of sentence, go to next line."
+  "Move to next field.
+if at end of sentence, go to next line."
   (interactive)
   (conllu--skip-to-end-of-field)
   (forward-char))
+
+(defun conllu--field-number (n)
+  "Move to field number N.
+N must be inbouds, i.e., 0 < N <= 10."
+  (beginning-of-line)
+  (dotimes (_t (1- n) t)
+    (conllu-field-forward)))
+
+(defun conllu-field-number-1 ()
+  "Move point to field ID."
+  (interactive)
+  (conllu--field-number 1))
+
+(defun conllu-field-number-2 ()
+  "Move point to field FORM."
+  (interactive)
+  (conllu--field-number 2))
+
+(defun conllu-field-number-3 ()
+  "Move point to field LEMMA."
+  (interactive)
+  (conllu--field-number 3))
+
+(defun conllu-field-number-4 ()
+  "Move point to field UPOSTAG."
+  (interactive)
+  (conllu--field-number 4))
+
+(defun conllu-field-number-5 ()
+  "Move point to field XPOSTAG."
+  (interactive)
+  (conllu--field-number 5))
+
+(defun conllu-field-number-6 ()
+  "Move point to field FEATS."
+  (interactive)
+  (conllu--field-number 6))
+
+(defun conllu-field-number-7 ()
+  "Move point to field HEAD."
+  (interactive)
+  (conllu--field-number 7))
+
+(defun conllu-field-number-8 ()
+  "Move point to field DEPREL."
+  (interactive)
+  (conllu--field-number 8))
+
+(defun conllu-field-number-9 ()
+  "Move point to field DEPS."
+  (interactive)
+  (conllu--field-number 9))
+
+(defun conllu-field-number-10 ()
+  "Move point to field MISC."
+  (interactive)
+  (conllu--field-number 10))
 
 (defun conllu-field-backward ()
   "Move to previous field.
