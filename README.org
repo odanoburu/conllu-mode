@@ -1,5 +1,7 @@
 #+TITLE: emacs mode for CoNLL-U files
 
+[[https://melpa.org/#/conllu-mode][file:https://melpa.org/packages/conllu-mode-badge.svg]]
+
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
