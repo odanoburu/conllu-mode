@@ -45,22 +45,26 @@ you can watch the following demo for an idea of what it can do:
 - ...
   
 * installation
-  first you must install the dependencies: assuming you have a
-  standard Emacs distribution, the only package needed which is
-  probably not installed yet is [[https://github.com/cute-jumper/parsec.el][parsec]]. (this won't have to be done
-  manually after issue #4 is resolved.) 
+** MELPA
+   conllu-mode is available from MELPA, so after [[https://melpa.org/#/getting-started][setting it up]] you may do:
+   : M-x package-install RET conllu-mode
+** manual installation
+   first you must install the dependencies: assuming you have a
+   standard Emacs distribution, the only package needed which is
+   probably not installed yet is [[https://github.com/cute-jumper/parsec.el][parsec]].
 
-  after having installed =parsec=, clone the repo and put these files
-  where emacs will load them, as in:
-#+BEGIN_SRC sh
-  $ cd ~/some/path/
-  $ git clone https://github.com/odanoburu/conllu-mode
-#+END_SRC
-  in your =.emacs=:
-#+BEGIN_SRC elisp
-(add-to-list 'load-path "~/some/path/conllu-mode")
-(require 'conllu-mode)
-#+END_SRC
+   after having installed =parsec=, clone the repo and put these files
+   where emacs will load them, as in:
+   #+BEGIN_SRC sh
+     $ cd ~/some/path/
+     $ git clone https://github.com/odanoburu/conllu-mode
+   #+END_SRC
+   in your =.emacs=:
+   #+BEGIN_SRC elisp
+     (add-to-list 'load-path "~/some/path/conllu-mode")
+     (autoload 'conllu-mode "conllu-mode")
+     (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
+   #+END_SRC
 
 * contributing
   contributions are welcome! even comments from experienced elispers
