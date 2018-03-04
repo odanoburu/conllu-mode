@@ -1,5 +1,7 @@
 #+TITLE: emacs mode for CoNLL-U files
 
+[[https://melpa.org/#/conllu-mode][file:https://melpa.org/packages/conllu-mode-badge.svg]]
+
 this mode provides simple utilities for editing and viewing CoNLL-U
 files.
 
@@ -15,8 +17,7 @@ you can watch the following demo for an idea of what it can do:
 | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
 | =M-n=       | unalign current sentence, go to the next one, and align it                                           |
 | =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
-| =C-c f=     | move forward to next field in a token line                                                           |
-| =C-c b=     | move backward to previous field in a token line                                                      |
+| =C-N=       | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
 | =C-c C-h=   | move point to head token of present token                                                            |
 
 * features
