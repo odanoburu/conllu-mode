@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
@@ -47,9 +47,15 @@
 (require 'parsec)
 
 ;;;
-;; misc
-(defvar conllu-tab-width 2
-  "Width of a tab in ‘conllu-mode’.")
+;; customize
+(defgroup 'conllu nil "Main customization group for conllu-mode."
+  :group 'Text
+  :link  '(url-link "https://github.com/odanoburu/conllu-mode"))
+
+(defcustom conllu-tab-width 2
+  "Width of a tab in ‘conllu-mode’."
+  :type 'integer
+  :group 'conllu)
 
 ;;;
 ;; keymap
@@ -93,7 +99,7 @@
   "List possible upostag values.")
 
 (defvar conllu-constants
-  '("acl" "advcl" "advmod" "amod" "appos" "aux" "case" "cc" "ccomp" "clf" "compound" "conj" "cop" "csubj" "dep" "det" "discourse" "dislocated" "expl" "fixed" "flat" "goeswith" "iobj" "list" "mark" "nmod" "nsubj" "nummod" "obj" "obl" "orphan" "parataxis" "punct" "reparandum" "root" "vocative" "xcomp")
+  '("acl" "advcl" "advmod" "amod" "appos" "aux" "case" "cc" "ccomp" "clf" "compound" "conj" "cop" "csubj" "dep" "det" "discourse" "dislocated" "expl" "fixed" "flat" "goeswith" "iobj" "list" "mark" "nmod" "nsubj" "nummod" "obj" "obl" "orphan" "parataxis" "punct" "reparandum" "root" "ref" "vocative" "xcomp")
   "List possible deprel values.")
 
 (defvar conllu-font-lock-defaults
@@ -108,8 +114,7 @@
   :syntax-table conllu-mode-syntax-table
   (setq-local font-lock-defaults conllu-font-lock-defaults)
   (setq-local indent-tabs-mode t) ;; use tabs for indentation
-  (when conllu-tab-width ;; allow user to change tab width
-    (setq-local tab-width conllu-tab-width))
+  (setq-local tab-width conllu-tab-width)
   (setq-local comment-start "# ")
   (setq-local comment-end "")
   (setq-local sentence-end ".$$") ;; to be able to use M-a and M-e to
