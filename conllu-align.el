@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.0
-;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
+;; Version: 0.1.1
+;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5") (flycheck "0.25"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of one finds in csv-mode.el.
 

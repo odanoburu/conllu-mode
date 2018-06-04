@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.1.1
-;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5") (flycheck "0.25"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -34,13 +34,14 @@
 ;; - jumping to next or previous sentence
 ;; - in a token line, jump to its head
 
-;;; code:
+;;; Code:
 
 ;;;
 ;; dependencies
 (require 'conllu-align)
 (require 'conllu-move)
 (require 'conllu-parse)
+(require 'conllu-flycheck)
 
 (require 'whitespace)
 (require 'cl-lib)
@@ -48,7 +49,7 @@
 
 ;;;
 ;; customize
-(defgroup 'conllu nil "Main customization group for conllu-mode."
+(defgroup conllu nil "Main customization group for `conllu-mode'."
   :group 'Text
   :link  '(url-link "https://github.com/odanoburu/conllu-mode"))
 
@@ -121,7 +122,9 @@
                                   ;; jump
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
-  (whitespace-mode))
+  (when conllu-flycheck?
+    (add-hook 'conllu-mode-hook 'flycheck-mode nil t))
+  (add-hook 'conllu-mode-hook 'whitespace-mode))
 
 
 ;;;###autoload
