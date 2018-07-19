@@ -81,6 +81,7 @@
     (modify-syntax-entry ?_ "w" st) ; _ is (part of) word, not whitespace
     (modify-syntax-entry ?, "w" st)
     (modify-syntax-entry ?. "w" st)
+    (modify-syntax-entry ?\" "w" st)
     (modify-syntax-entry ?# "<" st) ; begins comment
     (modify-syntax-entry ?\n ">" st) ; ends comment
     st)
