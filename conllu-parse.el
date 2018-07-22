@@ -35,6 +35,7 @@
 ;; - in a token line, jump to its head
 
 (require 'parsec)
+(eval-when-compile (require 'parsec))
 
 ;;; Code:
 
