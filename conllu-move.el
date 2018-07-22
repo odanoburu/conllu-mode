@@ -43,7 +43,7 @@
 ;; fields
 (defsubst conllu--skip-to-end-of-field ()
   "Skip forward over one field."
-  (skip-chars-forward "^[\t\n]"))
+  (skip-chars-forward "^\t^\n"))
 
 (defun conllu-field-forward ()
   "Move to next field.
