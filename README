@@ -18,7 +18,7 @@ you can watch the following demo for an idea of what it can do:
 | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
 | =M-n=       | unalign current sentence, go to the next one, and align it                                           |
 | =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
-| =C-N=       | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
+| =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
 | =C-c C-h=   | move point to head token of present token                                                            |
 
 * features
@@ -38,7 +38,7 @@ you can watch the following demo for an idea of what it can do:
 - hiding columns
 - call a parser to create CoNLL-U output from a sentence
 - call external visualization tool
-- validating CoNLL-U file
+- validating CoNLL-U file (flycheck?)
 # - in a sentence, jump to token that has a given index
 # - in sentence, jump to next token that has a given =upostag=
 # - in sentence, jump to next token that has a given =deprel=
