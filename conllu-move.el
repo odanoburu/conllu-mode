@@ -35,7 +35,9 @@
 ;; - in a token line, jump to its head
 
 (require 'conllu-parse)
-(require 'cl-lib)
+
+(eval-when-compile
+  (require 'cl-lib))
 
 ;;; Code:
 
