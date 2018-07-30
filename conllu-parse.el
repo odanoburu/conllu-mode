@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
 ;; Keywords: extensions
 
