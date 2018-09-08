@@ -5,7 +5,7 @@
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
 ;; Version: 0.1.1
-;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -34,93 +34,45 @@
 ;; - jumping to next or previous sentence
 ;; - in a token line, jump to its head
 
-(require 'parsec)
-(eval-when-compile (require 'parsec))
-
 ;;; Code:
 
-(defun conllu--spaces ()
-  "Optionally parse many spaces."
-  (parsec-optional*
-   (parsec-many
-    (parsec-ch ?\s))))
+(eval-when-compile
+  (require 'cl-lib))
 
-(defun conllu--symbol (parser &rest args)
-  "Apply `conllu--spaces' before calling PARSER with ARGS."
-  (parsec-and
-   (conllu--spaces)
-   (apply parser args)))
+(require 's)
 
-(defun conllu--empty-field ()
-  "Parse CoNLL-U empty field (_)."
-  (conllu--symbol #'parsec-ch ?_))
+(cl-defstruct conllu-token (id form lemma upos xpos feats head deprel deps misc))
 
-(defun conllu--no-space-field ()
-  "Parse CoNLL-U field that may have no spaces."
-  (conllu--symbol
-   (lambda ()
-     (parsec-many-as-string
-      (parsec-none-of ?\t ?\s ?\n)))))
+(defun conllu-make-id (id)
+  "Turn ID string into list representation."
+  (pcase (s-slice-at "[\.-]" id)
+    (`(,n) (string-to-int n))
+    (`(n sep-n2)
+     (let ((sep (substring sep-n2 0 1))
+           (n2 (substring sep-n2 1)))
+       (pcase
+           ("." (list 'empty n n2))
+           ("-" (list 'multi n n2)))))
+    (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
 
-(defun conllu--maybe-empty (parser &rest args)
-  "Try to parse empty field before calling PARSER with ARGS."
-  (parsec-or
-   (conllu--empty-field)
-   (apply parser args)))
+(defalias 'conllu--make-head 'conllu-make-id "Turn ID into list representation")
 
-(defun conllu--index ()
-  "Parse index field."
-  (conllu--symbol
-   (lambda ()
-     (string-to-number
-      (parsec-many-as-string (parsec-digit))))))
+(defun conllu--make-token (id fo le up xp fe he dr ds m)
+  "Turn CoNLL-U line field strings into a token."
+  (conllu-make-token (conllu--make-id id) fo le up xp fe
+                     (conllu--make-head he) dr ds m))
 
-(defun conllu--meta-separator ()
-  "Parse a meta separator in the CoNLL-U ID field.
-Either a '.' or a '-'."
-  (parsec-optional-maybe
-   (parsec-one-of ?- ?.)))
+(defun conllu--line->fields (line)
+  "Split a string into a list of field strings at TAB separator."
+  (mapcar s-trim (s-split "\t" line)))
 
-(defun conllu--other-index ()
-  "Optionally parse an index."
-  (parsec-optional-maybe
-   (parsec-many-as-string (parsec-digit))))
-
-(defun conllu--tab ()
-  "Parse a tab character."
-  (conllu--symbol #'parsec-ch ?\t)
-  nil)
-
-(defun conllu--eol ()
-  "Parse a newline character."
-  (conllu--symbol #'parsec-newline)
-  nil)
-
-(defun conllu--token ()
-  "Parse a CoNLL-U token -- any kind."
-  (parsec-collect*
-   (conllu--index) ; might not be empty
-   (conllu--meta-separator)
-   (conllu--other-index)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--index)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--tab)
-   (conllu--maybe-empty #'conllu--no-space-field)
-   (conllu--eol)))
+(defun conllu--line->token (line)
+  "Turn CoNLL-U line string into a token."
+  (let ((raw-fields (conllu--line->fields line)))
+    (pcase raw-fields
+      (`(,id ,fo ,le ,up ,xp ,fe ,he ,dr ,ds ,m)
+       (conllu-make-token id fo le up xp fe he dr ds m))
+      (_ (user-error "Error: wrong number of fields in token line. %s should have 9 tabs.")))))
 
 (provide 'conllu-parse)
 

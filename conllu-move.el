@@ -156,18 +156,25 @@ if root, moves to beginning of sentence."
          (user-error "%s" "Error: multiword token has no HEAD"))
         ((conllu--looking-at-etoken)
          (user-error "%s" "Error: empty token has no HEAD")))
-  (cl-destructuring-bind (ix ms oi fo l u x fe h dr ds m)
-      (parsec-parse (conllu--token))
-    (forward-line -1) ;; back to parsed line
+  (let* ((token (conllu--line->token (thing-at-point 'line t)))
+         (id (conllu-token-id token))
+         (h (conllu-token-head token)))
     (cond ((equal h "_")
            (user-error "%s" "Error: token has no head"))
           ((equal h 0)
            (user-error "%s" "Error: ROOT")))
-    (conllu--move-to-existing-head ix h)))
+    (conllu--move-to-existing-head id h)))
 
-(defun conllu--move-to-existing-head (ix head)
+(defun conllu--id> (id id2)
+  "Return t if CoNLL-U field ID is greater than ID2."
+  (pcase (list id id2)
+    (`(,(tt beg end) ,(tt2 beg end)) )
+    (`(,n ,n2) (> n n2))
+    (error "stopped here"))
+
+(defun conllu--move-to-existing-head (id head)
   "Decide if token head is forward or backward and move point there."
-  (if (> ix head)
+  (if (> id head)
       (conllu--move-forward-to-head head -1)
     (conllu--move-forward-to-head head 1)))
 
