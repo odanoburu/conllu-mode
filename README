@@ -60,9 +60,9 @@ you can watch the following demo for an idea of what it can do:
 ** manual installation
    first you must install the dependencies: assuming you have a
    standard Emacs distribution, the only package needed which is
-   probably not installed yet is [[https://github.com/cute-jumper/parsec.el][parsec]].
+   probably not installed yet is [[https://github.com/magnars/s.el][s]].
 
-   after having installed =parsec=, clone the repo, as in:
+   after having installed =s=, clone the repo, as in:
    #+BEGIN_SRC sh
      $ cd ~/some/path/
      $ git clone https://github.com/odanoburu/conllu-mode
@@ -70,8 +70,9 @@ you can watch the following demo for an idea of what it can do:
    make sure the repository in is emacs load path with
    : (add-to-list 'load-path "~/some/path/conllu-mode")
    in your =.emacs=.
-* contributing
-  contributions are welcome! even comments from experienced elispers
-  are welcome. just send an email or open an issue -- if you'd like a
+
+* contributions
+  yes, please! even comments from experienced elispers are
+  welcome. just send an email or open an issue -- if you'd like a
   suggestion on what to work on, take a look at the open issues or at
   the missing features (above).

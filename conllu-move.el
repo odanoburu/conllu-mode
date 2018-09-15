@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.1
-;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
+;; Version: 0.1.2
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,8 @@ if at end of sentence, go to next line."
   "Move to field number N.
 N must be inbouds, i.e., 0 < N <= 10."
   (beginning-of-line)
+  (when (conllu--not-looking-at-token) ;; should I make a function for this?
+    (user-error "%s" "Error: not at token line"))
   (dotimes (_t (1- n) t)
     (conllu-field-forward)))
 
@@ -150,40 +152,49 @@ assumes point is at beginning of line."
 if root, moves to beginning of sentence."
   (interactive)
   (beginning-of-line)
-  (cond ((conllu--not-looking-at-token)
-         (user-error "%s" "Error: not on token line"))
-        ((conllu--looking-at-mtoken)
-         (user-error "%s" "Error: multiword token has no HEAD"))
-        ((conllu--looking-at-etoken)
-         (user-error "%s" "Error: empty token has no HEAD")))
+  (when (conllu--not-looking-at-token)
+    (user-error "%s" "Error: not at token line"))
   (let* ((token (conllu--line->token (thing-at-point 'line t)))
          (id (conllu-token-id token))
          (h (conllu-token-head token)))
-    (cond ((equal h "_")
-           (user-error "%s" "Error: token has no head"))
-          ((equal h 0)
-           (user-error "%s" "Error: ROOT")))
-    (conllu--move-to-existing-head id h)))
+    (cond
+     ((conllu--meta-token? token)
+      (user-error "%s" "Error: meta token has no HEAD"))
+     ((equal h nil)
+      (user-error "%s" "Error: token has no head"))
+     ((equal h 0)
+      (user-error "%s" "Error: ROOT")))
+    (conllu--move-to-head h)))
+
+(defun conllu--move-to-head (head)
+  "Decide if token HEAD is forward or backward and move point there."
+  (let ((token (conllu--line->maybe-token (thing-at-point 'line t))))
+    (unless token
+      (if (conllu--not-looking-at-token)
+          (user-error "%s" "Error: missing head token")
+        (user-error "%s" "Error: malformed token")))
+    (let ((id (conllu-token-id token)))
+      (cond
+       ((conllu--id> id head)
+        (progn (forward-line -1)
+               (conllu--move-to-head head)))
+       ((conllu--id> head id)
+        (progn (forward-line 1)
+               (conllu--move-to-head head)))
+       (t (beginning-of-line))))))
 
 (defun conllu--id> (id id2)
   "Return t if CoNLL-U field ID is greater than ID2."
-  (pcase (list id id2)
-    (`(,(tt beg end) ,(tt2 beg end)) )
-    (`(,n ,n2) (> n n2))
-    (error "stopped here"))
-
-(defun conllu--move-to-existing-head (id head)
-  "Decide if token head is forward or backward and move point there."
-  (if (> id head)
-      (conllu--move-forward-to-head head -1)
-    (conllu--move-forward-to-head head 1)))
-
-(defun conllu--move-forward-to-head (head n)
-  "Move point to the head token that is known to exist."
-  (beginning-of-line)
-  (unless (looking-at (concat (int-to-string head) "\t"))
-    (progn (forward-line n)
-           (conllu--move-forward-to-head head n))))
+  (pcase (cons id id2)
+    (`((,tt ,beg ,end) . (,tt2 ,beg2 ,end2))
+     ; todo: does this ever happen? if so it's incorrect
+     (> beg beg2))
+    (`((,tt ,beg ,end) . ,n)
+     (> beg n))
+    (`(,n . (,tt ,beg ,end))
+     (> n beg))
+    (`(,n . ,n2)
+     (> n n2))))
 ;>
 
 ;;;
