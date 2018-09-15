@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.1
-;; Package-Requires: ((emacs "25") (parsec "0.1") (cl-lib "0.5"))
+;; Version: 0.1.2
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@
 
 (require 'whitespace)
 (require 'cl-lib)
-(require 'parsec)
+(require 's)
 
 ;;;
 ;; misc
