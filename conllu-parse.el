@@ -78,7 +78,7 @@
 
 (defun conllu--line->fields (line)
   "Split a string into a list of field strings at TAB separator."
-  (mapcar 's-trim (s-split "\t" line)))
+  (mapcar #'s-trim (s-split "\t" line)))
 
 (defun conllu--line->maybe-token (line)
   "Turn a well-formed CoNLL-U LINE string into a token, else return nil."
