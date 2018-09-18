@@ -158,7 +158,7 @@ if root, moves to beginning of sentence."
          (id (conllu-token-id token))
          (h (conllu-token-head token)))
     (cond
-     ((conllu--meta-token? token)
+     ((conllu--meta-token-p token)
       (user-error "%s" "Error: meta token has no HEAD"))
      ((equal h nil)
       (user-error "%s" "Error: token has no head"))

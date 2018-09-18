@@ -66,7 +66,7 @@
            ("-" (list 'multi n n2)))))
     (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
 
-(defun conllu--meta-token? (tk)
+(defun conllu--meta-token-p (tk)
   "Return t if TK is a meta CoNLL-U token (either a multiword token or an empty token."
   (consp (conllu-token-id tk)))
 
