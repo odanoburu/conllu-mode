@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -51,13 +51,45 @@
 (defvar conllu-tab-width 2
   "Width of a tab in ‘conllu-mode’.")
 
+;;; orphan functions
+(defun conllu--clear-field ()
+  "Extract text from field at point and prompt for its replacement.
+If REPLACE is non-nil, display the original text as default
+string in the minibuffer, else display the empty field as default string."
+  (save-excursion (beginning-of-line) (conllu--barf-if-not-at-token-line))
+  (let* ((start (progn (conllu--skip-backward-to-end-of-field)
+                       (point)))
+         (end (progn (conllu--skip-forward-to-end-of-field)
+                     (point))))
+    (delete-and-extract-region start end)))
+
+(defun conllu-clear-field ()
+  "Empty the field at point."
+  (interactive)
+  (conllu--clear-field)
+  (insert "_"))
+
+(defun conllu-edit-field ()
+  "Interactively edit the field at point."
+  (interactive)
+  (let ((original-str (conllu--clear-field)))
+    (minibuffer-with-setup-hook (lambda () (insert original-str))
+      (call-interactively #'conllu--prompt-for-field-string))))
+
+(defun conllu--prompt-for-field-string (str)
+  "Prompt for string in the minibuffer and insert it at point."
+  (interactive "sString to place in current field:")
+  (insert str))
+
 ;;;
 ;; keymap
 (defvar conllu-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [(control ?c) (control ?a)] 'conllu-align-fields)
-    (define-key map [(control ?c) (control ?u)] 'conllu-unalign-fields)
-    (define-key map [(control ?c) (control ?h)] 'conllu-move-to-head)
+    (define-key map [(control ?c) (control ?a)] #'conllu-align-fields)
+    (define-key map [(control ?c) (control ?c)] #'conllu-clear-field)
+    (define-key map [(control ?c) (control ?e)] #'conllu-edit-field)
+    (define-key map [(control ?c) (control ?u)] #'conllu-unalign-fields)
+    (define-key map [(control ?c) (control ?h)] #'conllu-move-to-head)
     (define-key map [(control ?c) ?1] 'conllu-field-number-1)
     (define-key map [(control ?c) ?2] 'conllu-field-number-2)
     (define-key map [(control ?c) ?3] 'conllu-field-number-3)

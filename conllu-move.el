@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -43,7 +43,11 @@
 
 ;;;
 ;; fields
-(defsubst conllu--skip-to-end-of-field ()
+(defsubst conllu--skip-backward-to-end-of-field ()
+  "Skip backward over one field."
+  (skip-chars-backward "^\t^\n"))
+
+(defsubst conllu--skip-forward-to-end-of-field ()
   "Skip forward over one field."
   (skip-chars-forward "^\t^\n"))
 
@@ -51,7 +55,7 @@
   "Move to next field.
 if at end of sentence, go to next line."
   (interactive)
-  (conllu--skip-to-end-of-field)
+  (conllu--skip-forward-to-end-of-field)
   (forward-char))
 
 (defun conllu--field-number (n)
@@ -126,13 +130,13 @@ if at beginning of sentence, go to previous line"
 ;< looking at functions
 (defsubst conllu--not-looking-at-token ()
   "Return t if looking at blank or comment line, nil otherwise.
-assumes point is at beginning of line."
+Assumes point is at beginning of line."
   (looking-at (concat " *$" "\\|" "#")))
 
 ;; tokens are divided in simple, multi and empty tokens.
 (defsubst conllu--looking-at-stoken ()
   "Return t if looking at a simple token line, nil otherwise.
-assumes point is at beginning of line."
+Assumes point is at beginning of line."
   (looking-at "[0-9]*[^-.]\t"))
 
 (defsubst conllu--looking-at-mtoken ()
@@ -146,19 +150,22 @@ assumes point is at beginning of line."
   (looking-at "[0-9]*\\.[0-9]*\t"))
 ;>
 
+(defun conllu--barf-if-not-at-token-line (&optional message)
+  "Displays error MESSAGE if not at token line."
+  (when (conllu--not-looking-at-token)
+    (user-error "%s" (or message "Error: not at token line"))))
+
 ;< move to token head
 (defun conllu-move-to-head ()
   "Move point to the head token of the present token (if it has one).
 if root, moves to beginning of sentence."
   (interactive)
   (beginning-of-line)
-  (when (conllu--not-looking-at-token)
-    (user-error "%s" "Error: not at token line"))
+  (conllu--barf-if-not-at-token-line)
   (let* ((token (conllu--line->token (thing-at-point 'line t)))
-         (id (conllu-token-id token))
          (h (conllu-token-head token)))
     (cond
-     ((conllu--meta-token? token)
+     ((conllu--meta-token-p token)
       (user-error "%s" "Error: meta token has no HEAD"))
      ((equal h nil)
       (user-error "%s" "Error: token has no head"))
@@ -168,11 +175,10 @@ if root, moves to beginning of sentence."
 
 (defun conllu--move-to-head (head)
   "Decide if token HEAD is forward or backward and move point there."
+  (conllu--barf-if-not-at-token-line)
   (let ((token (conllu--line->maybe-token (thing-at-point 'line t))))
     (unless token
-      (if (conllu--not-looking-at-token)
-          (user-error "%s" "Error: missing head token")
-        (user-error "%s" "Error: malformed token")))
+      (user-error "%s" "Error: malformed token line"))
     (let ((id (conllu-token-id token)))
       (cond
        ((conllu--id> id head)
@@ -186,12 +192,12 @@ if root, moves to beginning of sentence."
 (defun conllu--id> (id id2)
   "Return t if CoNLL-U field ID is greater than ID2."
   (pcase (cons id id2)
-    (`((,tt ,beg ,end) . (,tt2 ,beg2 ,end2))
+    (`((,_ ,beg ,_) . (,_ ,beg2 ,_))
      ; todo: does this ever happen? if so it's incorrect
      (> beg beg2))
-    (`((,tt ,beg ,end) . ,n)
+    (`((,_ ,beg ,_) . ,n)
      (> beg n))
-    (`(,n . (,tt ,beg ,end))
+    (`(,n . (,_ ,beg ,_))
      (> n beg))
     (`(,n . ,n2)
      (> n n2))))

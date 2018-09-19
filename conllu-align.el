@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25") (s "1.0") (cl-lib "0.5"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of the one in csv-mode.el.
@@ -82,7 +82,7 @@ means left align text and right align numbers."
                 (col (current-column))
                 x)
             (while (not (eolp))
-              (conllu--skip-to-end-of-field)
+              (conllu--skip-forward-to-end-of-field)
               (setq x (- (current-column) col)) ; Field width.
               (if w
                   (if (> x (car w)) (setcar w x))
@@ -131,7 +131,7 @@ BEG and END must be point values."
                        (right-padding 0)
                        (field-width
                         (- (- (current-column)
-                              (progn (conllu--skip-to-end-of-field) (current-column)))))
+                              (progn (conllu--skip-forward-to-end-of-field) (current-column)))))
                        (column-width (pop w))
                        (x (- column-width field-width))) ; Required padding.
                   (set-marker end (point)) ; End of current field.

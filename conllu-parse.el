@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -57,16 +57,16 @@
  kind of meta-token ('empty or 'multi), and the rest are
  integers."
   (pcase (s-slice-at "[\.-]" id)
-    (`(,n) (string-to-int n))
-    (`(n sep-n2)
+    (`(,n) (string-to-number n))
+    (`(,n ,sep-n2)
      (let ((sep (substring sep-n2 0 1))
            (n2 (substring sep-n2 1)))
-       (pcase
+       (pcase sep
            ("." (list 'empty n n2))
            ("-" (list 'multi n n2)))))
     (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
 
-(defun conllu--meta-token? (tk)
+(defun conllu--meta-token-p (tk)
   "Return t if TK is a meta CoNLL-U token (either a multiword token or an empty token."
   (consp (conllu-token-id tk)))
 
