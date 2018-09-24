@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Package-Requires: ((emacs "25") (s "1.0") (cl-lib "0.5"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of the one in csv-mode.el.
@@ -35,6 +35,7 @@
 ;; - jumping to next or previous sentence
 ;; - in a token line, jump to its head
 
+(require 'conllu-thing)
 (require 'conllu-move)
 
 ;;; Code:
@@ -58,20 +59,6 @@ means left align text and right align numbers."
   :type '(choice (const left) (const centre)
                  (const right) (const auto))
   :group 'conllu-align-group)
-
-(defun conllu--sentence-begin-point ()
-  "Return point of the beginning of current sentence."
-  (save-excursion (backward-sentence) (point)))
-
-(defun conllu--sentence-end-point ()
-  "Return point of the end of current sentence."
-  (save-excursion (forward-sentence) (point)))
-
-(defun conllu--sentence-points ()
-  "Return points that delimit current sentence."
-  (let ((start (conllu--sentence-begin-point))
-        (end (conllu--sentence-end-point)))
-    (list start end)))
 
 (defun conllu--column-widths ()
   (let ((widths '()))

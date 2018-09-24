@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -35,6 +35,7 @@
 ;; - in a token line, jump to its head
 
 (require 'conllu-parse)
+(require 'conllu-thing)
 
 (eval-when-compile
   (require 'cl-lib))
@@ -58,64 +59,63 @@ if at end of sentence, go to next line."
   (conllu--skip-forward-to-end-of-field)
   (forward-char))
 
-(defun conllu--field-number (n)
+(defun conllu--move-to-field-number (n)
   "Move to field number N.
 N must be inbouds, i.e., 0 < N <= 10."
   (beginning-of-line)
-  (when (conllu--not-looking-at-token) ;; should I make a function for this?
-    (user-error "%s" "Error: not at token line"))
+  (conllu--barf-if-not-at-token-line)
   (dotimes (_t (1- n) t)
     (conllu-field-forward)))
 
-(defun conllu-field-number-1 ()
+(defun conllu-move-to-field-number-1 ()
   "Move point to field ID."
   (interactive)
-  (conllu--field-number 1))
+  (conllu--move-to-field-number 1))
 
-(defun conllu-field-number-2 ()
+(defun conllu-move-to-field-number-2 ()
   "Move point to field FORM."
   (interactive)
-  (conllu--field-number 2))
+  (conllu--move-to-field-number 2))
 
-(defun conllu-field-number-3 ()
+(defun conllu-move-to-field-number-3 ()
   "Move point to field LEMMA."
   (interactive)
-  (conllu--field-number 3))
+  (conllu--move-to-field-number 3))
 
-(defun conllu-field-number-4 ()
+(defun conllu-move-to-field-number-4 ()
   "Move point to field UPOSTAG."
   (interactive)
-  (conllu--field-number 4))
+  (conllu--move-to-field-number 4))
 
-(defun conllu-field-number-5 ()
+(defun conllu-move-to-field-number-5 ()
   "Move point to field XPOSTAG."
   (interactive)
-  (conllu--field-number 5))
+  (conllu--move-to-field-number 5))
 
-(defun conllu-field-number-6 ()
+(defun conllu-move-to-field-number-6 ()
   "Move point to field FEATS."
   (interactive)
-  (conllu--field-number 6))
+  (conllu--move-to-field-number 6))
 
-(defun conllu-field-number-7 ()
+(defun conllu-move-to-field-number-7 ()
   "Move point to field HEAD."
   (interactive)
-  (conllu--field-number 7))
+  (conllu--move-to-field-number 7))
 
-(defun conllu-field-number-8 ()
+(defun conllu-move-to-field-number-8 ()
   "Move point to field DEPREL."
   (interactive)
-  (conllu--field-number 8))
+  (conllu--move-to-field-number 8))
 
-(defun conllu-field-number-9 ()
+(defun conllu-move-to-field-number-9 ()
   "Move point to field DEPS."
   (interactive)
-  (conllu--field-number 9))
+  (conllu--move-to-field-number 9))
 
-(defun conllu-field-number-10 ()
+(defun conllu-move-to-field-number-10 ()
   "Move point to field MISC."
   (interactive)
-  (conllu--field-number 10))
+  (conllu--move-to-field-number 10))
 
 (defun conllu-field-backward ()
   "Move to previous field.
@@ -124,36 +124,6 @@ if at beginning of sentence, go to previous line"
   (skip-chars-backward "^[\t\n]")
   (forward-char -1)
   (skip-chars-backward "^[\t\n]"))
-
-;;;
-;; token
-;< looking at functions
-(defsubst conllu--not-looking-at-token ()
-  "Return t if looking at blank or comment line, nil otherwise.
-Assumes point is at beginning of line."
-  (looking-at (concat " *$" "\\|" "#")))
-
-;; tokens are divided in simple, multi and empty tokens.
-(defsubst conllu--looking-at-stoken ()
-  "Return t if looking at a simple token line, nil otherwise.
-Assumes point is at beginning of line."
-  (looking-at "[0-9]*[^-.]\t"))
-
-(defsubst conllu--looking-at-mtoken ()
-  "Return t if looking at a multi-token line, nil otherwise.
-assumes point is at beginning of line."
-  (looking-at "[0-9]*-[0-9]*\t"))
-
-(defsubst conllu--looking-at-etoken ()
-  "Return t if looking at an empty token line, nil otherwise.
-assumes point is at beginning of line."
-  (looking-at "[0-9]*\\.[0-9]*\t"))
-;>
-
-(defun conllu--barf-if-not-at-token-line (&optional message)
-  "Displays error MESSAGE if not at token line."
-  (when (conllu--not-looking-at-token)
-    (user-error "%s" (or message "Error: not at token line"))))
 
 ;< move to token head
 (defun conllu-move-to-head ()
@@ -188,19 +158,6 @@ if root, moves to beginning of sentence."
         (progn (forward-line 1)
                (conllu--move-to-head head)))
        (t (beginning-of-line))))))
-
-(defun conllu--id> (id id2)
-  "Return t if CoNLL-U field ID is greater than ID2."
-  (pcase (cons id id2)
-    (`((,_ ,beg ,_) . (,_ ,beg2 ,_))
-     ; todo: does this ever happen? if so it's incorrect
-     (> beg beg2))
-    (`((,_ ,beg ,_) . ,n)
-     (> beg n))
-    (`(,n . (,_ ,beg ,_))
-     (> n beg))
-    (`(,n . ,n2)
-     (> n n2))))
 ;>
 
 ;;;
