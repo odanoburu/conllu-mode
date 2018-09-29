@@ -17,6 +17,7 @@ you can watch the following demo for an idea of what it can do:
 | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
 | =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
 | =C-c C-e=   | edit field at point interactively                                                                    |
+| =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument                 |
 | =M-n=       | unalign current sentence, go to the next one, and align it                                           |
 | =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
 | =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |

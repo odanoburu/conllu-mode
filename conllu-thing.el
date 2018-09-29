@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -49,6 +49,10 @@
 Return point to original position."
   (save-excursion (beginning-of-line)
                   (looking-at regexp)))
+
+(defsubst conllu--looking-at-empty-line ()
+  "Return t if looking at blank line."
+  (conllu--looking-at "^ *$"))
 
 (defsubst conllu--not-looking-at-token ()
   "Return t if looking at blank or comment line, nil otherwise."
