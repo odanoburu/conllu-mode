@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -41,6 +41,7 @@
 (require 'conllu-align)
 (require 'conllu-move)
 (require 'conllu-parse)
+(require 'conllu-thing)
 
 (require 'whitespace)
 (require 'cl-lib)
@@ -81,6 +82,15 @@ string in the minibuffer, else display the empty field as default string."
   (interactive "sString to place in current field:")
   (insert str))
 
+(defun conllu-insert-token-line (&optional n)
+  "Insert empty token line at point if at beginning of line.
+Else do it in the next line. If called with a prefix argument, insert N lines."
+  (interactive "p")
+  (unless (bolp)
+    (forward-line))
+  (dotimes (_ n)
+    (insert "_\t_\t_\t_\t_\t_\t_\t_\t_\t_\n")))
+
 ;;;
 ;; keymap
 (defvar conllu-mode-map
@@ -88,21 +98,22 @@ string in the minibuffer, else display the empty field as default string."
     (define-key map [(control ?c) (control ?a)] #'conllu-align-fields)
     (define-key map [(control ?c) (control ?c)] #'conllu-clear-field)
     (define-key map [(control ?c) (control ?e)] #'conllu-edit-field)
-    (define-key map [(control ?c) (control ?u)] #'conllu-unalign-fields)
     (define-key map [(control ?c) (control ?h)] #'conllu-move-to-head)
-    (define-key map [(control ?c) ?1] 'conllu-move-to-field-number-1)
-    (define-key map [(control ?c) ?2] 'conllu-move-to-field-number-2)
-    (define-key map [(control ?c) ?3] 'conllu-move-to-field-number-3)
-    (define-key map [(control ?c) ?4] 'conllu-move-to-field-number-4)
-    (define-key map [(control ?c) ?5] 'conllu-move-to-field-number-5)
-    (define-key map [(control ?c) ?6] 'conllu-move-to-field-number-6)
-    (define-key map [(control ?c) ?7] 'conllu-move-to-field-number-7)
-    (define-key map [(control ?c) ?8] 'conllu-move-to-field-number-8)
-    (define-key map [(control ?c) ?9] 'conllu-move-to-field-number-9)
-    (define-key map [(control ?c) ?0] 'conllu-move-to-field-number-10)
-    (define-key map [(meta ?e)] 'conllu-forward-sentence)
-    (define-key map [(meta ?n)] 'conllu-next-sentence)
-    (define-key map [(meta ?p)] 'conllu-previous-sentence)
+    (define-key map [(control ?c) (control ?l)] #'conllu-insert-token-line)
+    (define-key map [(control ?c) (control ?u)] #'conllu-unalign-fields)
+    (define-key map [(control ?c) ?1] #'conllu-move-to-field-number-1)
+    (define-key map [(control ?c) ?2] #'conllu-move-to-field-number-2)
+    (define-key map [(control ?c) ?3] #'conllu-move-to-field-number-3)
+    (define-key map [(control ?c) ?4] #'conllu-move-to-field-number-4)
+    (define-key map [(control ?c) ?5] #'conllu-move-to-field-number-5)
+    (define-key map [(control ?c) ?6] #'conllu-move-to-field-number-6)
+    (define-key map [(control ?c) ?7] #'conllu-move-to-field-number-7)
+    (define-key map [(control ?c) ?8] #'conllu-move-to-field-number-8)
+    (define-key map [(control ?c) ?9] #'conllu-move-to-field-number-9)
+    (define-key map [(control ?c) ?0] #'conllu-move-to-field-number-10)
+    (define-key map [(meta ?e)] #'conllu-forward-sentence)
+    (define-key map [(meta ?n)] #'conllu-next-sentence)
+    (define-key map [(meta ?p)] #'conllu-previous-sentence)
     map)
   "Keymap for ‘conllu-mode’.")
 
