@@ -38,8 +38,8 @@
 
 ;;;
 ;; dependencies
+(eval-when-compile (require 'cl-lib))
 (require 'conllu-move)
-
 
 (defun conllu--clear-field ()
   "Extract text from field at point and prompt for its replacement.
@@ -79,7 +79,28 @@ Else do it in the next line. If called with a prefix argument, insert N lines."
   (dotimes (_ n)
     (insert "_\t_\t_\t_\t_\t_\t_\t_\t_\t_\n")))
 
+(defun conllu-merge-sentences ()
+  "Merge the sentence at point with the next one.
+Manual adjustment of metadata is needed."
+  (interactive)
+  (backward-sentence)
+  (let* ((s1 (thing-at)
+
+(defun conllu--offset-indices (tk inc)
+  "Offset the TK's id and head fields by n.";todo: should offset deps too.
+  (cl-labels ((offset-word (n) (+ n inc))
+              (offset-empty (n n2) `(multi ,(+ n inc) ,(+ n2 inc)))
+              (offset-multi (n n2) `(empty ,(+ n inc) ,n2))
+              (offset-indices (id) (conllu--do-token-id id
+                                                        #'offset-word
+                                                        #'offset-empty
+                                                        #'offset-multi)))
+    (setf (conllu-token-id tk) (funcall #'offset-indices (conllu-token-id tk)))
+    (let ((h (conllu-token-head tk)))
+      (when h
+        (setf (conllu-token-head tk) (funcall #'offset-indices h)))
+      tk)))
+
 (provide 'conllu-edit)
 
 ;;; conllu-edit.el ends here
-

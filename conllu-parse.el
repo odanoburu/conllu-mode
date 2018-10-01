@@ -38,6 +38,11 @@
 (require 'cl-lib)
 (require 's)
 
+(cl-defstruct (conllu-sent (:constructor nil)
+                           (:constructor conllu--make-sent (comments tokens))
+                           (:copier nil))
+  comments tokens)
+
 (cl-defstruct (conllu-token (:constructor nil)
                             (:constructor conllu--token-create (id form lemma upos xpos feats head deprel deps misc))
                             (:copier nil))
@@ -47,10 +52,10 @@
 ;;; integers or lists (nil if empty)
 (defun conllu--make-token (id fo le up xp fe he dr ds m)
   "Turn CoNLL-U line field strings into a token."
-  (conllu--token-create (conllu--make-id id) fo le up xp fe
+  (conllu--token-create (conllu--string->token-id id) fo le up xp fe
                         (conllu--make-head he) dr ds m))
 
-(defun conllu--make-id (id)
+(defun conllu--string->token-id (id)
   "Turn ID string into integer or list representation.
  IDs of regular tokens are integers, and those of meta tokens are
  represented as lists of three elements: the first element is the
@@ -59,12 +64,33 @@
   (pcase (s-slice-at "[\.-]" id)
     (`(,n) (string-to-number n))
     (`(,n ,sep-n2)
-     (let ((sep (substring sep-n2 0 1))
-           (n2 (substring sep-n2 1)))
+     (let ((n (string-to-number n))
+           (sep (substring sep-n2 0 1))
+           (n2 (string-to-number (substring sep-n2 1))))
        (pcase sep
            ("." (list 'empty n n2))
            ("-" (list 'multi n n2)))))
     (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
+
+(defun conllu--do-token-id (id w-fn e-fn m-fn)
+  "Apply either W-FN E-FN or M-FN on ID, depending on its type."
+  (pcase id
+    (`(empty ,n ,n2) (funcall e-fn n n2))
+    (`(multi ,n ,n2) (funcall m-fn n n2))
+    (n (funcall w-fn n))))
+
+(defun conllu--token-id->string (id)
+  "Return the string representation of CoNLL-U ID."
+  (conllu--do-token-id id
+                       #'number-to-string
+                       (lambda (n n2) (format "%d.%d" n n2))
+                       (lambda (n n2) (format "%d-%d" n n2))))
+
+(defun conllu--token-head->string (head)
+  "Return the string representation of CoNLL-U HEAD."
+  (if head
+      (conllu--token-id->string head)
+    "_"))
 
 (defun conllu--meta-token-p (tk)
   "Return t if TK is a meta CoNLL-U token (either a multiword token or an empty token."
@@ -74,7 +100,7 @@
   "Turn H into list representation, or nil if head field is empty."
   (if (string-equal h "_")
       nil
-    (conllu--make-id h)))
+    (conllu--string->token-id h)))
 
 (defun conllu--line->fields (line)
   "Split a string into a list of field strings at TAB separator."
@@ -94,6 +120,37 @@
     (if tk
         tk
       (user-error "%s" "Error: malformed token line"))))
+
+(defun conllu--comment-line? (str)
+  "Return t if STR is a CoNLL-U comment line."
+  (string-equal "# " (seq-take (s-trim str) 2)))
+
+(defun conllu--string->sent (sent)
+  "Turn a well-formed CoNLL-U SENT string into a sentence."
+  (let* ((ls (s-split "\n" sent t))
+         (ls-by (seq-group-by #'conllu--comment-line? ls))
+         (cs (rest (assoc t ls-by)))
+         (tks (mapcar #'conllu--line->token (rest (assoc nil ls-by)))))
+    (conllu--make-sent cs tks)))
+
+(defun conllu--token->line (token)
+  "Print conllu TOKEN to a string."
+  (s-join "\t" (list
+                (conllu--token-id->string (conllu-token-id token))
+                (conllu-token-form token)
+                (conllu-token-lemma token)
+                (conllu-token-upos token)
+                (conllu-token-xpos token)
+                (conllu-token-feats token)
+                (conllu--token-head->string (conllu-token-head token))
+                (conllu-token-deprel token)
+                (conllu-token-deps token)
+                (conllu-token-misc token))))
+
+(defun conllu--map-sent-tokens (sent f)
+  "Call F on each token of SENT."
+  (setf sent (conllu-sent-tokens sent) (mapcar f (conllu-sent-tokens sent)))
+  sent)
 
 (provide 'conllu-parse)
 
