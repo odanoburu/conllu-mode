@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.5
+;; Version: 0.1.6
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -39,6 +39,7 @@
 ;;;
 ;; dependencies
 (require 'conllu-align)
+(require 'conllu-edit)
 (require 'conllu-move)
 (require 'conllu-parse)
 (require 'conllu-thing)
@@ -51,45 +52,6 @@
 ;; misc
 (defvar conllu-tab-width 2
   "Width of a tab in ‘conllu-mode’.")
-
-;;; orphan functions
-(defun conllu--clear-field ()
-  "Extract text from field at point and prompt for its replacement.
-If REPLACE is non-nil, display the original text as default
-string in the minibuffer, else display the empty field as default string."
-  (save-excursion (beginning-of-line) (conllu--barf-if-not-at-token-line))
-  (let* ((start (progn (conllu--skip-backward-to-end-of-field)
-                       (point)))
-         (end (progn (conllu--skip-forward-to-end-of-field)
-                     (point))))
-    (delete-and-extract-region start end)))
-
-(defun conllu-clear-field ()
-  "Empty the field at point."
-  (interactive)
-  (conllu--clear-field)
-  (insert "_"))
-
-(defun conllu-edit-field ()
-  "Interactively edit the field at point."
-  (interactive)
-  (let ((original-str (conllu--clear-field)))
-    (minibuffer-with-setup-hook (lambda () (insert original-str))
-      (call-interactively #'conllu--prompt-for-field-string))))
-
-(defun conllu--prompt-for-field-string (str)
-  "Prompt for string in the minibuffer and insert it at point."
-  (interactive "sString to place in current field:")
-  (insert str))
-
-(defun conllu-insert-token-line (&optional n)
-  "Insert empty token line at point if at beginning of line.
-Else do it in the next line. If called with a prefix argument, insert N lines."
-  (interactive "p")
-  (unless (bolp)
-    (forward-line))
-  (dotimes (_ n)
-    (insert "_\t_\t_\t_\t_\t_\t_\t_\t_\t_\n")))
 
 ;;;
 ;; keymap
