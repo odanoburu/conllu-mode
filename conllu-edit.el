@@ -40,6 +40,7 @@
 ;; dependencies
 (eval-when-compile (require 'cl-lib))
 (require 'conllu-move)
+(require 'conllu-thing)
 
 (defun conllu--clear-field ()
   "Extract text from field at point and prompt for its replacement.
@@ -84,7 +85,15 @@ Else do it in the next line. If called with a prefix argument, insert N lines."
 Manual adjustment of metadata is needed."
   (interactive)
   (backward-sentence)
-  (let* ((s1 (thing-at)
+  (let* ((s1-ps (prog1 (conllu--sentence-points)
+                 (forward-sentence)
+                 (forward-sentence)))
+         (s2-ps (conllu--sentence-points))
+         (s1-str (apply #'buffer-substring-no-properties s1-ps))
+         (s1 (conllu--string->sent s1-str))
+         (s2-str (apply #'buffer-substring-no-properties s2-ps))
+         (s2 (conllu--string->sent s2-str))
+         (s1-last-index (conllu--id->index (conllu-token-id (last (conllu-sent-tokens s1))))))))
 
 (defun conllu--offset-indices (tk inc)
   "Offset the TK's id and head fields by n.";todo: should offset deps too.
