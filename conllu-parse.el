@@ -69,11 +69,11 @@
          (ls-by (seq-group-by #'conllu--comment-line? ls))
          (cs (rest (assoc t ls-by)))
          (tks (mapcar #'conllu--line->token (rest (assoc nil ls-by)))))
-    (conllu--make-sent cs tks)))
+    (conllu--sent-make cs tks)))
 
 ;;; print token
-(defun conllu--token->line (token)
-  "Print conllu TOKEN to a string."
+(defun conllu--token->string (token)
+  "Print CoNLL-U TOKEN to a string."
   (s-join "\t" (list
                 (conllu--token-id->string (conllu-token-id token))
                 (conllu-token-form token)
@@ -85,6 +85,13 @@
                 (conllu-token-deprel token)
                 (conllu-token-deps token)
                 (conllu-token-misc token))))
+
+;;; print sent
+(defun conllu--sent->string (sent)
+  "Print CoNLL-U SENT to a string."
+  (s-join "\n" (append
+                (conllu-sent-comments sent)
+                (mapcar #'conllu--token->string (conllu-sent-tokens sent)))))
 
 (provide 'conllu-parse)
 

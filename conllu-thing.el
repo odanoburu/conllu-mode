@@ -71,14 +71,14 @@ Return point to original position."
 
 ;;; structs
 (cl-defstruct (conllu-sent (:constructor nil)
-                           (:constructor conllu--make-sent (comments tokens))
+                           (:constructor conllu--sent-make (comments tokens))
                            (:copier nil))
   comments tokens)
 
-(defun conllu--map-sent-tokens (sent f)
-  "Call F on each token of SENT."
-  (setf (conllu-sent-tokens sent) (mapcar f (conllu-sent-tokens sent)))
-  sent)
+(defun conllu--map-sent-tokens (f sent)
+  "Return SENT with F applied to each one of its tokens."
+  (conllu--sent-make (conllu-sent-comments sent)
+                     (mapcar f (conllu-sent-tokens sent))))
 
 (cl-defstruct (conllu-token (:constructor nil)
                             (:constructor conllu--token-create (id form lemma upos xpos feats head deprel deps misc))
@@ -171,8 +171,6 @@ the first of the two numbers."
     (`(multi ,n ,_) n)
     ((pred numberp) id)))
 
-
-
 (defun conllu--sentence-begin-point ()
   "Return point of the beginning of current sentence."
   (save-excursion (backward-sentence) (point)))
@@ -189,13 +187,24 @@ the first of the two numbers."
 
 (defun conllu--sentence-points ()
   "Return points that delimit current sentence."
-  (list (conllu--sentence-begin-point)
-        (conllu--sentence-end-point)))
+  (save-excursion
+    ;; can't use conllu--sentence-begin-point because they save
+    ;; excursion
+    (let ((bp (progn (backward-sentence)
+                     (point)))
+          (ep (progn (forward-sentence)
+                     (point))))
+      (list bp ep))))
 
 (defun conllu--sentence-tokens-points ()
   "Return points that delimit the token lines of the sentence at point."
-  (list (conllu--sentence-tokens-begin-point)
-        (conllu--sentence-end-point)))
+  (save-excursion
+    (let ((bp (progn (backward-sentence)
+                     (conllu-forward-to-token-line)
+                     (point)))
+          (ep (progn (forward-sentence)
+                     (point))))
+      (list bp ep))))
 
 (provide 'conllu-thing)
 
