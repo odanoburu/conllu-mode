@@ -116,7 +116,12 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
       (setf (conllu-token-id tk-) (funcall #'offset-index (conllu-token-id tk-)))
       (let ((h (conllu-token-head tk-)))
         (when h
-          (setf (conllu-token-head tk-) (funcall #'offset-index h)))
+          (setf (conllu-token-head tk-) (funcall #'offset-index h))))
+      (let ((ds (conllu-token-deps tk-)))
+        (when ds
+          (setf (conllu-token-deps tk-) (mapcar (lambda (dep) (list* (offset-index (car dep))
+                                                                     (cdr dep)))
+                                                ds)))
         tk-))))
 
 (provide 'conllu-edit)

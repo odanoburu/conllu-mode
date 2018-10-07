@@ -67,8 +67,8 @@
   "Turn a well-formed CoNLL-U SENT string into a sentence."
   (let* ((ls (s-split "\n" sent t))
          (ls-by (seq-group-by #'conllu--comment-line? ls))
-         (cs (rest (assoc t ls-by)))
-         (tks (mapcar #'conllu--line->token (rest (assoc nil ls-by)))))
+         (cs (cdr (assoc t ls-by)))
+         (tks (mapcar #'conllu--line->token (cdr (assoc nil ls-by)))))
     (conllu--sent-make cs tks)))
 
 ;;; print token
@@ -83,7 +83,7 @@
                 (conllu-token-feats token)
                 (conllu--token-head->string (conllu-token-head token))
                 (conllu-token-deprel token)
-                (conllu-token-deps token)
+                (conllu--token-deps->string (conllu-token-deps token))
                 (conllu-token-misc token))))
 
 ;;; print sent

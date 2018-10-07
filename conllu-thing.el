@@ -85,12 +85,14 @@ Return point to original position."
                             (:copier nil))
   id form lemma upos xpos feats head deprel deps misc)
 
-;;; all fields are strings, except for ID and HEAD, which are either
-;;; integers or lists (nil if empty)
+;;; all fields are strings, except for ID and HEAD (which are either
+;;; integers or lists (nil if empty)) and DEPS (list of lists of
+;;; (integer . string ...)
 (defun conllu--make-token (id fo le up xp fe he dr ds m)
   "Turn CoNLL-U line field strings into a token."
   (conllu--token-create (conllu--string->token-id id) fo le up xp fe
-                        (conllu--make-head he) dr ds m))
+                        (conllu--string->token-head he) dr
+                        (conllu--string->token-deps ds) m))
 
 (defun conllu--string->token-id (id)
   "Turn ID string into integer or list representation.
@@ -133,11 +135,34 @@ Return point to original position."
   "Return t if TK is a meta CoNLL-U token (either a multiword token or an empty token."
   (consp (conllu-token-id tk)))
 
-(defun conllu--make-head (h)
+(defun conllu--empty-field? (fs)
+  "Return t if FS is the empty field string (_)."
+  (when (string-equal fs "_")
+    t))
+    
+(defun conllu--string->token-head (h)
   "Turn H into list representation, or nil if head field is empty."
-  (if (string-equal h "_")
-      nil
+  (unless (conllu--empty-field? h)
     (conllu--string->token-id h)))
+
+(defun conllu--string->token-deps (deps)
+  "Return list representation of DEPS."
+  (cl-labels ((string->dep (dep)
+                           (pcase (s-split ":" dep)
+                             (`(,h ,d . ,dt) (list* (conllu--string->token-id h)
+                                                    d
+                                                    dt)))))
+    (unless (conllu--empty-field? deps)
+      (mapcar #'string->dep (s-split "|" deps t)))))
+
+(defun conllu--token-deps->string (deps)
+  "Return the string representation CoNLL-U DEPS."
+  (cl-labels ((dep->string (dep)
+                           (s-join ":" (cons (conllu--token-id->string (car dep))
+                                             (cdr dep)))))
+    (if deps
+        (s-join "|" (mapcar #'dep->string deps))
+      "_")))
 
 ;;; utils
 (defun conllu--comment-line? (str)
