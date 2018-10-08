@@ -109,6 +109,7 @@
 
 ;;;
 ;; derive mode
+;;;###autoload
 (define-derived-mode conllu-mode fundamental-mode "CoNLL-U"
   "conllu-mode is a major mode for editing CoNLL-U files."
   :syntax-table conllu-mode-syntax-table
@@ -125,6 +126,8 @@
   (whitespace-mode))
 
 
+;;;;###autoload
+;(autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
 

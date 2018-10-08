@@ -181,7 +181,7 @@ Argument N is either 1 or -1, specifying which direction to go."
   "Jump to end of sentence, which in CoNLL-U files is actually the next blank line."
   (interactive)
   (forward-sentence)
-  (forward-line))
+  (forward-line 2))
 
 (defun conllu-next-sentence ()
   "Unalign sentence at point, jump to next sentence and align it."
