@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.6
+;; Version: 0.1.7
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -109,6 +109,7 @@
 
 ;;;
 ;; derive mode
+;;;###autoload
 (define-derived-mode conllu-mode fundamental-mode "CoNLL-U"
   "conllu-mode is a major mode for editing CoNLL-U files."
   :syntax-table conllu-mode-syntax-table
@@ -125,6 +126,8 @@
   (whitespace-mode))
 
 
+;;;;###autoload
+;(autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
 

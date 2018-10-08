@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.6
+;; Version: 0.1.7
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -35,47 +35,14 @@
 ;; - in a token line, jump to its head
 
 ;;; Code:
-(require 'cl-lib)
+
+;;; dependencies
+(require 'conllu-thing)
+
 (require 's)
 
-(cl-defstruct (conllu-token (:constructor nil)
-                            (:constructor conllu--token-create (id form lemma upos xpos feats head deprel deps misc))
-                            (:copier nil))
-  id form lemma upos xpos feats head deprel deps misc)
 
-;;; all fields are strings, except for ID and HEAD, which are either
-;;; integers or lists (nil if empty)
-(defun conllu--make-token (id fo le up xp fe he dr ds m)
-  "Turn CoNLL-U line field strings into a token."
-  (conllu--token-create (conllu--make-id id) fo le up xp fe
-                        (conllu--make-head he) dr ds m))
-
-(defun conllu--make-id (id)
-  "Turn ID string into integer or list representation.
- IDs of regular tokens are integers, and those of meta tokens are
- represented as lists of three elements: the first element is the
- kind of meta-token ('empty or 'multi), and the rest are
- integers."
-  (pcase (s-slice-at "[\.-]" id)
-    (`(,n) (string-to-number n))
-    (`(,n ,sep-n2)
-     (let ((sep (substring sep-n2 0 1))
-           (n2 (substring sep-n2 1)))
-       (pcase sep
-           ("." (list 'empty n n2))
-           ("-" (list 'multi n n2)))))
-    (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
-
-(defun conllu--meta-token-p (tk)
-  "Return t if TK is a meta CoNLL-U token (either a multiword token or an empty token."
-  (consp (conllu-token-id tk)))
-
-(defun conllu--make-head (h)
-  "Turn H into list representation, or nil if head field is empty."
-  (if (string-equal h "_")
-      nil
-    (conllu--make-id h)))
-
+;;; parse token line
 (defun conllu--line->fields (line)
   "Split a string into a list of field strings at TAB separator."
   (mapcar #'s-trim (s-split "\t" line)))
@@ -94,6 +61,37 @@
     (if tk
         tk
       (user-error "%s" "Error: malformed token line"))))
+
+;;; parse sent
+(defun conllu--string->sent (sent)
+  "Turn a well-formed CoNLL-U SENT string into a sentence."
+  (let* ((ls (s-split "\n" sent t))
+         (ls-by (seq-group-by #'conllu--comment-line? ls))
+         (cs (cdr (assoc t ls-by)))
+         (tks (mapcar #'conllu--line->token (cdr (assoc nil ls-by)))))
+    (conllu--sent-make cs tks)))
+
+;;; print token
+(defun conllu--token->string (token)
+  "Print CoNLL-U TOKEN to a string."
+  (s-join "\t" (list
+                (conllu--token-id->string (conllu-token-id token))
+                (conllu-token-form token)
+                (conllu-token-lemma token)
+                (conllu-token-upos token)
+                (conllu-token-xpos token)
+                (conllu-token-feats token)
+                (conllu--token-head->string (conllu-token-head token))
+                (conllu-token-deprel token)
+                (conllu--token-deps->string (conllu-token-deps token))
+                (conllu-token-misc token))))
+
+;;; print sent
+(defun conllu--sent->string (sent)
+  "Print CoNLL-U SENT to a string."
+  (s-join "\n" (append
+                (conllu-sent-comments sent)
+                (mapcar #'conllu--token->string (conllu-sent-tokens sent)))))
 
 (provide 'conllu-parse)
 

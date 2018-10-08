@@ -10,26 +10,25 @@ you can watch the following demo for an idea of what it can do:
 
 [[https://asciinema.org/a/vO51IVyAeKBF1uSB1ogzCXcCb][file:static/demo.png]]
 
-* default key bindings
-| key binding | description                                                                                          |
-|-------------+------------------------------------------------------------------------------------------------------|
-| =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence) |
-| =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
-| =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
-| =C-c C-e=   | edit field at point interactively                                                                    |
-| =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
-| =M-n=       | unalign current sentence, go to the next one, and align it                                           |
-| =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
-| =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
-| =C-c C-h=   | move point to head token of present token                                                            |
+* commands
+| command name                  | key binding | description                                                                                                                   |
+|-------------------------------+-------------+-------------------------------------------------------------------------------------------------------------------------------|
+| conllu-align-fields           | =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence)                          |
+| conllu-unalign-fields         | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                                         |
+| conllu-clear-field            | =C-c C-c=   | clear field at point, placing =_= as its value                                                                                |
+| conllu-edit-field             | =C-c C-e=   | edit field at point interactively                                                                                             |
+| conllu-merge-sentences        | -           | merge the sentence at point and the following one, offsetting the indices of the latter one. Comments must be merge manually. |
+| conllu-insert-token-line      | =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines)                          |
+| conllu-forward-sentence       | =M-e=       | jump to the next sentence                                                                                                     |
+| conllu-next-sentence          | =M-n=       | unalign current sentence, jump to the next one, and align it                                                                  |
+| conllu-previous-sentence      | =M-p=       | unalign current sentence, jump the previous one, and align it                                                                 |
+| conllu-move-to-field-number-N | =C-c N=     | move point to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                                    |
+| conllu-move-to-head           | =C-c C-h=   | move point to head token of present token                                                                                     |
 
 * features
 - highlighting comments, and =upostag= and =deprel= fields
 - truncate lines by default
 - show newline and tab characters using =whitespace.el=
-- aligning and unaligning column fields
-- jumping to next or previous sentence
-- jump to the token at point's =head=
 
 * missing
   if you'd like to have a feature implemented, you should file at
