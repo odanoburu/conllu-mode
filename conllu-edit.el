@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.7
+;; Version: 0.1.8
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -119,7 +119,7 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
           (setf (conllu-token-head tk-) (funcall #'offset-index h))))
       (let ((ds (conllu-token-deps tk-)))
         (when ds
-          (setf (conllu-token-deps tk-) (mapcar (lambda (dep) (list* (offset-index (car dep))
+          (setf (conllu-token-deps tk-) (mapcar (lambda (dep) (cl-list* (offset-index (car dep))
                                                                      (cdr dep)))
                                                 ds)))
         tk-))))

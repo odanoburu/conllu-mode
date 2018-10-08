@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.7
+;; Version: 0.1.8
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
 ;; Keywords: extensions
 
@@ -149,7 +149,7 @@ Return point to original position."
   "Return list representation of DEPS."
   (cl-labels ((string->dep (dep)
                            (pcase (s-split ":" dep)
-                             (`(,h ,d . ,dt) (list* (conllu--string->token-id h)
+                             (`(,h ,d . ,dt) (cl-list* (conllu--string->token-id h)
                                                     d
                                                     dt)))))
     (unless (conllu--empty-field? deps)

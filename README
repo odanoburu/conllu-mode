@@ -10,25 +10,26 @@ you can watch the following demo for an idea of what it can do:
 
 [[https://asciinema.org/a/vO51IVyAeKBF1uSB1ogzCXcCb][file:static/demo.png]]
 
-* commands
-| command name                  | key binding | description                                                                                                                   |
-|-------------------------------+-------------+-------------------------------------------------------------------------------------------------------------------------------|
-| conllu-align-fields           | =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence)                          |
-| conllu-unalign-fields         | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                                         |
-| conllu-clear-field            | =C-c C-c=   | clear field at point, placing =_= as its value                                                                                |
-| conllu-edit-field             | =C-c C-e=   | edit field at point interactively                                                                                             |
-| conllu-merge-sentences        | -           | merge the sentence at point and the following one, offsetting the indices of the latter one. Comments must be merge manually. |
-| conllu-insert-token-line      | =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines)                          |
-| conllu-forward-sentence       | =M-e=       | jump to the next sentence                                                                                                     |
-| conllu-next-sentence          | =M-n=       | unalign current sentence, jump to the next one, and align it                                                                  |
-| conllu-previous-sentence      | =M-p=       | unalign current sentence, jump the previous one, and align it                                                                 |
-| conllu-move-to-field-number-N | =C-c N=     | move point to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                                    |
-| conllu-move-to-head           | =C-c C-h=   | move point to head token of present token                                                                                     |
+* default key bindings
+| key binding | description                                                                                          |
+|-------------+------------------------------------------------------------------------------------------------------|
+| =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence) |
+| =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
+| =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
+| =C-c C-e=   | edit field at point interactively                                                                    |
+| =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
+| =M-n=       | unalign current sentence, go to the next one, and align it                                           |
+| =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
+| =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
+| =C-c C-h=   | move point to head token of present token                                                            |
 
 * features
 - highlighting comments, and =upostag= and =deprel= fields
 - truncate lines by default
 - show newline and tab characters using =whitespace.el=
+- aligning and unaligning column fields
+- jumping to next or previous sentence
+- jump to the token at point's =head=
 
 * missing
   if you'd like to have a feature implemented, you should file at
@@ -47,13 +48,8 @@ you can watch the following demo for an idea of what it can do:
 - ...
   
 * installation
-  in your =.emacs=:
-  #+BEGIN_SRC elisp
-    (autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
-    (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
-  #+END_SRC
-  you may install the latest versions from MELPA, or proceed to a
-  manual installation:
+you may install the latest versions from MELPA, or proceed to a manual
+installation:
 ** MELPA
    [[https://melpa.org/#/getting-started][set MELPA up]] if you haven't already and then do:
    : M-x package-install RET conllu-mode
@@ -67,10 +63,14 @@ you can watch the following demo for an idea of what it can do:
      $ cd ~/some/path/
      $ git clone https://github.com/odanoburu/conllu-mode
    #+END_SRC
-   make sure the repository in is emacs load path with
-   : (add-to-list 'load-path "~/some/path/conllu-mode")
+   make sure that the repository is in the emacs load path and that
+   the autoloads are properly set with
+   #+BEGIN_SRC elisp
+     (add-to-list 'load-path "~/some/path/conllu-mode")
+     (autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
+     (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
+   #+END_SRC
    in your =.emacs=.
-
 * contributions
   yes, please! even comments from experienced elispers are
   welcome. just send an email or open an issue -- if you'd like a
