@@ -30,6 +30,27 @@ you can watch the following demo for an idea of what it can do:
 - aligning and unaligning column fields
 - jumping to next or previous sentence
 - jump to the token at point's =head=
+- flycheck CoNLL-U buffers
+
+* flycheck
+** setup
+to be able to flycheck CoNLL-U buffers you need to:
+
+- obtain the =validate.py= script from the [[https://github.com/universaldependencies/tools][UD-tools]] repository (make
+  sure you clone/download the whole repo, because the script depends
+  on data and configuration files in there).
+- set the =conllu-flycheck-validate.py-path= variable to the filepath
+  of the =validate.py= script. you can use =M-x customize-variable
+  conllu-flycheck-validate.py-path= for this.
+
+** use
+you can use the normal flycheck keybindings (here's [[https://www.masteringemacs.org/article/spotlight-flycheck-a-flymake-replacement][a nice
+summary]]). note that the =validate.py= demands a two-letter language
+code to do its validation; =conllu-mode= infers this from the file
+name, assuming it follows UD filename convention of starting with such
+a language code (as in =pt_bosque-ud-test.conllu=). if your file
+doesn't start with a language code, flycheck will invoke the script
+with the default value of =ud=, which might throw spurious errors.
 
 * missing
   if you'd like to have a feature implemented, you should file at
@@ -39,7 +60,6 @@ you can watch the following demo for an idea of what it can do:
 - hiding columns
 - call a parser to create CoNLL-U output from a sentence
 - call external visualization tool
-- validating CoNLL-U file (flycheck?)
 # - in a sentence, jump to token that has a given index
 # - in sentence, jump to next token that has a given =upostag=
 # - in sentence, jump to next token that has a given =deprel=
@@ -55,10 +75,9 @@ installation:
    : M-x package-install RET conllu-mode
 ** manual installation
    first you must install the dependencies: assuming you have a
-   standard Emacs distribution, the only package needed which is
-   probably not already installed is [[https://github.com/magnars/s.el][s]].
+   standard Emacs distribution, you need to install [[https://github.com/magnars/s.el][s]] and [[https://github.com/flycheck/flycheck][flycheck]].
 
-   after having installed =s=, clone the repo, as in:
+   after having installed the dependencies, clone the repo, as in:
    #+BEGIN_SRC sh
      $ cd ~/some/path/
      $ git clone https://github.com/odanoburu/conllu-mode
@@ -71,6 +90,7 @@ installation:
      (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
    #+END_SRC
    in your =.emacs=.
+
 * contributions
   yes, please! even comments from experienced elispers are
   welcome. just send an email or open an issue -- if you'd like a

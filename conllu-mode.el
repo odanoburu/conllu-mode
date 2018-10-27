@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.1.8
-;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0"))
+;; Version: 0.2.0
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -34,24 +34,31 @@
 ;; - jumping to next or previous sentence
 ;; - in a token line, jump to its head
 
-;;; code:
+;;; Code:
 
 ;;;
 ;; dependencies
 (require 'conllu-align)
 (require 'conllu-edit)
+(require 'conllu-flycheck)
 (require 'conllu-move)
 (require 'conllu-parse)
 (require 'conllu-thing)
 
 (require 'whitespace)
-(require 'cl-lib)
-(require 's)
 
 ;;;
-;; misc
-(defvar conllu-tab-width 2
-  "Width of a tab in ‘conllu-mode’.")
+;; customizable
+(defgroup conllu nil
+  "Support for CoNLL-U files."
+  :group 'data
+  :link  '(url-link "http://universaldependencies.org/"))
+
+(defcustom conllu-tab-width
+  2
+  "Width of a tab in ‘conllu-mode’."
+  :type 'integer
+  :group 'conllu)
 
 ;;;
 ;; keymap
@@ -94,17 +101,17 @@
 
 ;;;
 ;; fonts
-(defvar conllu-keywords
+(defvar conllu-upos-values
   '("ADJ" "ADP" "ADV" "AUX" "CCONJ" "DET" "INTJ" "NOUN" "NUM" "PART" "PRON" "PROPN" "PUNCT" "SCONJ" "SYM" "VERB" "X")
   "List possible upostag values.")
 
-(defvar conllu-constants
+(defvar conllu-deprel-values
   '("acl" "advcl" "advmod" "amod" "appos" "aux" "case" "cc" "ccomp" "clf" "compound" "conj" "cop" "csubj" "dep" "det" "discourse" "dislocated" "expl" "fixed" "flat" "goeswith" "iobj" "list" "mark" "nmod" "nsubj" "nummod" "obj" "obl" "orphan" "parataxis" "punct" "reparandum" "root" "vocative" "xcomp")
   "List possible deprel values.")
 
 (defvar conllu-font-lock-defaults
-  `((( ,(regexp-opt conllu-keywords 'words) . font-lock-builtin-face)
-     ( ,(regexp-opt conllu-constants 'words) . font-lock-constant-face)))
+  `((( ,(regexp-opt conllu-upos-values 'words) . font-lock-builtin-face)
+     ( ,(regexp-opt conllu-deprel-values 'words) . font-lock-constant-face)))
   "Default font locks for ‘conllu-mode’.")
 
 ;;;
@@ -115,15 +122,15 @@
   :syntax-table conllu-mode-syntax-table
   (setq-local font-lock-defaults conllu-font-lock-defaults)
   (setq-local indent-tabs-mode t) ;; use tabs for indentation
-  (when conllu-tab-width ;; allow user to change tab width
-    (setq-local tab-width conllu-tab-width))
+  (setq-local tab-width conllu-tab-width)
   (setq-local comment-start "# ")
   (setq-local comment-end "")
   (setq-local sentence-end ".$$") ;; to be able to use M-a and M-e to
                                   ;; jump
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
-  (whitespace-mode))
+  (whitespace-mode)
+  (conllu-invoke-flycheck-if-checker-available))
 
 
 ;;;;###autoload
