@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
 ;; Keywords: extensions
 
@@ -45,7 +45,11 @@
   "Set the path to the validate.py script."
   :type 'file
   :group 'conllu
-  :set (lambda (sym val) (when val (set-default sym (file-truename val)))))
+  :set (lambda (sym val) (when val
+                           (let ((fp (file-truename val)))
+                             (if (file-exists-p fp)
+                                 (set-default sym fp)
+                               (user-error "File ~s does not exist" fp))))))
 
 (defun conllu-invoke-flycheck-if-checker-available ()
   "Invoke `flycheck-mode' if `conllu-flycheck-validate.py-path'

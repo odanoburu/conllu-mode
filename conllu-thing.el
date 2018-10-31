@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
 ;; Keywords: extensions
 
@@ -200,7 +200,7 @@ the first of the two numbers."
   "Return point of the beginning of current sentence."
   (save-excursion (backward-sentence) (point)))
 
-(defun conllu--sentence-tokens-begin-point()
+(defun conllu--sentence-tokens-begin-point ()
   "Return point of the beginning of the first token line."
   (save-excursion (backward-sentence)
                   (conllu-forward-to-token-line)
@@ -211,7 +211,7 @@ the first of the two numbers."
   (save-excursion (forward-sentence) (point)))
 
 (defun conllu--sentence-points ()
-  "Return points that delimit current sentence."
+  "Return points that delimit current sentence in a list."
   (save-excursion
     ;; can't use conllu--sentence-begin-point because they save
     ;; excursion
