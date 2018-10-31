@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of the one in csv-mode.el.
@@ -175,6 +175,31 @@ BEG and END must be point values."
   (mapc #'conllu--delete-overlay (overlays-in beg end))
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
+
+(defun conllu-realign-sentence ()
+  "Unalign and align current sentence fields."
+  (interactive)
+  (let ((beg (conllu--sentence-begin-point))
+        (end (conllu--sentence-end-point)))
+    (conllu-unalign-fields beg end)
+    (conllu-align-fields beg end)))
+
+(defun conllu--sentence-aligned? ()
+  "Return nil if sentece is not aligned.
+This implementation looks for an overlay with the 'conllu
+property set to t in the first character of the first token
+line. It would be bug if this overlay where there and the
+sentence were not aligned (even if wrongly aligned)."
+  (let* ((beg (conllu--sentence-tokens-begin-point))
+         (ovs (overlays-at beg)))
+    (cl-some (lambda (ov) (overlay-get ov 'conllu)) ovs)))
+
+(defun conllu--sentence-realign-if-aligned ()
+  "Realign sentence if it has been aligned."
+  (when (conllu--sentence-aligned?)
+    (conllu-realign-sentence)
+    nil))
+
 
 (provide 'conllu-align)
 

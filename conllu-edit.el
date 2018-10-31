@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
 ;; Keywords: extensions
 
@@ -39,6 +39,8 @@
 ;;;
 ;; dependencies
 (eval-when-compile (require 'cl-lib))
+(require 's)
+(require 'conllu-align)
 (require 'conllu-move)
 (require 'conllu-thing)
 
@@ -57,19 +59,23 @@ string in the minibuffer, else display the empty field as default string."
   "Empty the field at point."
   (interactive)
   (conllu--clear-field)
-  (insert "_"))
+  (insert "_")
+  (conllu--sentence-realign-if-aligned))
 
 (defun conllu-edit-field ()
   "Interactively edit the field at point."
   (interactive)
   (let ((original-str (conllu--clear-field)))
     (minibuffer-with-setup-hook (lambda () (insert original-str))
-      (call-interactively #'conllu--prompt-for-field-string))))
+      (call-interactively #'conllu--prompt-for-field-string)))
+  (conllu--sentence-realign-if-aligned))
 
 (defun conllu--prompt-for-field-string (str)
   "Prompt for string in the minibuffer and insert it at point."
   (interactive "sString to place in current field:")
-  (insert str))
+  (if (s-blank? str)
+      (insert "_")
+    (insert str)))
 
 (defun conllu-insert-token-line (&optional n)
   "Insert empty token line at point if at beginning of line.
