@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.2
-;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
+;; Version: 0.3.0
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -40,15 +40,14 @@
 ;; dependencies
 (eval-when-compile (require 'cl-lib))
 (require 's)
+(require 'hydra)
 (require 'conllu-align)
 (require 'conllu-move)
 (require 'conllu-thing)
 
-(defun conllu--clear-field ()
-  "Extract text from field at point and prompt for its replacement.
-If REPLACE is non-nil, display the original text as default
-string in the minibuffer, else display the empty field as default string."
-  (save-excursion (beginning-of-line) (conllu--barf-if-not-at-token-line))
+(defun conllu--extract-field ()
+  "Extract text from field at point and return it.
+Assumes point is at token line."
   (let* ((start (progn (conllu--skip-backward-to-end-of-field)
                        (point)))
          (end (progn (conllu--skip-forward-to-end-of-field)
@@ -58,20 +57,31 @@ string in the minibuffer, else display the empty field as default string."
 (defun conllu-clear-field ()
   "Empty the field at point."
   (interactive)
-  (conllu--clear-field)
+  (conllu--barf-unless-at-token-line)
+  (conllu--extract-field)
   (insert "_")
   (conllu--sentence-realign-if-aligned))
+
+(defun conllu--edit-field ()
+  "Edit the field at point in the minibuffer.
+Assumes point is at token line. If field value is empty ('_'),
+put the empty string in the minibuffer instead of the original
+string."
+  (let* ((original-str (conllu--extract-field))
+         (str (if (s-equals? original-str "_") "" original-str)))
+    (minibuffer-with-setup-hook (lambda () (insert str))
+      (call-interactively #'conllu--prompt-for-field-string))))
 
 (defun conllu-edit-field ()
   "Interactively edit the field at point."
   (interactive)
-  (let ((original-str (conllu--clear-field)))
-    (minibuffer-with-setup-hook (lambda () (insert original-str))
-      (call-interactively #'conllu--prompt-for-field-string)))
+  (conllu--barf-unless-at-token-line)
+  (conllu--edit-field)
   (conllu--sentence-realign-if-aligned))
 
 (defun conllu--prompt-for-field-string (str)
-  "Prompt for string in the minibuffer and insert it at point."
+  "Prompt for string in the minibuffer and insert it at point.
+If string is blank, insert the empty field ('_')."
   (interactive "sString to place in current field:")
   (if (s-blank? str)
       (insert "_")
@@ -129,6 +139,37 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                                                      (cdr dep)))
                                                 ds)))
         tk-))))
+
+(cl-labels ((move-and-edit-field (n)
+                                 (conllu--move-to-field-number n)
+                                 (conllu--edit-field)))
+  (defhydra conllu-edit-hydra (:pre (conllu--barf-unless-at-token-line)
+                               :post (conllu--sentence-realign-if-aligned))
+      "
+_1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
+_2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
+_3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
+_4_: UPOS %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
+_5_: XPOS %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
+_6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
+_7_: HEAD %(nth 6 (conllu--line->fields (thing-at-point 'line t)))
+_8_: DEPREL %(nth 7 (conllu--line->fields (thing-at-point 'line t)))
+_9_: DEPS %(nth 8 (conllu--line->fields (thing-at-point 'line t)))
+_0_: MISC %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
+_q_: quit
+
+"
+    ("1" (move-and-edit-field 1) nil)
+    ("2" (move-and-edit-field 2) nil)
+    ("3" (move-and-edit-field 3) nil)
+    ("4" (move-and-edit-field 4) nil)
+    ("5" (move-and-edit-field 5) nil)
+    ("6" (move-and-edit-field 6) nil)
+    ("7" (move-and-edit-field 7) nil)
+    ("8" (move-and-edit-field 8) nil)
+    ("9" (move-and-edit-field 9) nil)
+    ("0" (move-and-edit-field 10) nil)
+    ("q" nil nil)))
 
 (provide 'conllu-edit)
 

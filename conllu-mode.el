@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.2
-;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
+;; Version: 0.3.0
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -66,7 +66,7 @@
   (let ((map (make-sparse-keymap)))
     (define-key map [(control ?c) (control ?a)] #'conllu-align-fields)
     (define-key map [(control ?c) (control ?c)] #'conllu-clear-field)
-    (define-key map [(control ?c) (control ?e)] #'conllu-edit-field)
+    (define-key map [(control ?c) (control ?e)] #'conllu-edit-hydra/body)
     (define-key map [(control ?c) (control ?h)] #'conllu-move-to-head)
     (define-key map [(control ?c) (control ?l)] #'conllu-insert-token-line)
     (define-key map [(control ?c) (control ?u)] #'conllu-unalign-fields)

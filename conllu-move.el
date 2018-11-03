@@ -4,8 +4,8 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.2.2
-;; Package-Requires: ((emacs "25") (cl-lib "0.5") (s "1.0") (flycheck "30"))
+;; Version: 0.3.0
+;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -62,8 +62,8 @@ if at end of sentence, go to next line."
 (defun conllu--move-to-field-number (n)
   "Move to field number N.
 N must be inbouds, i.e., 0 < N <= 10."
+  (conllu--barf-unless-at-token-line)
   (beginning-of-line)
-  (conllu--barf-if-not-at-token-line)
   (dotimes (_t (1- n) t)
     (conllu-field-forward)))
 
@@ -130,8 +130,8 @@ if at beginning of sentence, go to previous line"
   "Move point to the head token of the present token (if it has one).
 if root, moves to beginning of sentence."
   (interactive)
+  (conllu--barf-unless-at-token-line)
   (beginning-of-line)
-  (conllu--barf-if-not-at-token-line)
   (let* ((token (conllu--line->token (thing-at-point 'line t)))
          (h (conllu-token-head token)))
     (cond
@@ -145,7 +145,7 @@ if root, moves to beginning of sentence."
 
 (defun conllu--move-to-head (head)
   "Decide if token HEAD is forward or backward and move point there."
-  (conllu--barf-if-not-at-token-line)
+  (conllu--barf-unless-at-token-line)
   (let ((token (conllu--line->maybe-token (thing-at-point 'line t))))
     (unless token
       (user-error "%s" "Error: malformed token line"))
