@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of the one in csv-mode.el.
@@ -185,7 +185,7 @@ BEG and END must be point values."
     (conllu-align-fields beg end)))
 
 (defun conllu--sentence-aligned? ()
-  "Return nil if sentece is not aligned.
+  "Return nil if sentence is not aligned.
 This implementation looks for an overlay with the 'conllu
 property set to t in the first character of the first token
 line. It would be bug if this overlay where there and the
