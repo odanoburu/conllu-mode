@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -177,36 +177,37 @@ Argument N is either 1 or -1, specifying which direction to go."
     (forward-line n)
     (conllu--move-to-token-line n)))
 
-(defun conllu-forward-sentence ()
-  "Jump to end of sentence, which in CoNLL-U files is actually the next blank line."
+(defun conllu--forward-sentence (n)
+  "Jump to end of sentence.
+With negative argument, move backward to start of sentence."
   (interactive)
-  (forward-sentence)
-  (forward-line 2))
+  (forward-sentence n)
+  (forward-char n))
+
+(defun conllu--next-sentence (n)
+  "Jump to next sentence.
+If sentence was aligned, unalign it and align the next
+sentence. With negative argument, move backward."
+  (let ((aligned? (conllu--sentence-aligned?)))
+    (apply #'conllu-unalign-fields (conllu--sentence-points))
+    (conllu--forward-sentence n)
+    (conllu--move-to-token-line n)
+    (when aligned?
+      (apply #'conllu-align-fields (conllu--sentence-points)))))
 
 (defun conllu-next-sentence ()
-  "Unalign sentence at point, jump to next sentence and align it."
+  "Jump to next sentence.
+If previous sentence was aligned, unalign it and align the next
+sentence."
   (interactive)
-  (conllu-unalign-fields
-   (conllu--sentence-begin-point)
-   (conllu--sentence-end-point))
-  (conllu-forward-sentence)
-  (conllu-forward-to-token-line)
-  (conllu-align-fields
-   (conllu--sentence-begin-point)
-   (conllu--sentence-end-point)))
+  (conllu--next-sentence 1))
 
 (defun conllu-previous-sentence ()
-  "Unalign sentence at point, jump to next sentence and align
-it."
+  "Jump to previous sentence.
+If sentence was aligned, unalign it and align the previous
+sentence."
   (interactive)
-  (conllu-unalign-fields
-   (conllu--sentence-begin-point)
-   (conllu--sentence-end-point))
-  (backward-sentence)
-  (conllu-backward-to-token-line)
-  (conllu-align-fields
-   (conllu--sentence-begin-point)
-   (conllu--sentence-end-point)))
+  (conllu--next-sentence -1))
 
 (provide 'conllu-move)
 

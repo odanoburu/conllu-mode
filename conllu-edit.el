@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -140,7 +140,16 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                                 ds)))
         tk-))))
 
-(cl-labels ((move-and-edit-field (n)
+(cl-labels ((move-tok-and-edit (n)
+                               (forward-line n)
+                               (when (conllu--not-looking-at-token)
+                                 (forward-line (- n))
+                                 (conllu--next-sentence n))
+                               (conllu-edit-hydra/body))
+            (move-sent-and-edit (n)
+                                (conllu--next-sentence n)
+                                (conllu-edit-hydra/body))
+            (move-and-edit-field (n)
                                  (conllu--move-to-field-number n)
                                  (conllu--edit-field)))
   (defhydra conllu-edit-hydra (:pre (conllu--barf-unless-at-token-line)
@@ -148,9 +157,9 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
     "
 ^Navigate^             ^Edit^
 ^^^^^^^^-----------------------------
-_n_: next tok      _1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
-_p_: prev tok      _2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
-_e_: next snt      _3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
+_l_: next tok      _1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
+_k_: prev tok      _2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
+_s_: next snt      _3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
 _a_: prev snt      _4_: UPOS %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
 ^ ^                _5_: XPOS %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
 _q_: quit          _6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
@@ -160,10 +169,10 @@ _q_: quit          _6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'lin
 ^ ^                _0_: MISC %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
 
 "
-    ("n" (progn (forward-line) (conllu-forward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
-    ("p" (progn (forward-line -1) (conllu-backward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
-    ("e" (progn (forward-sentence) (forward-line) (conllu-forward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
-    ("a" (progn (backward-sentence) (conllu-backward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
+    ("l" (move-tok-and-edit 1) nil :exit t)
+    ("k" (move-tok-and-edit -1) nil :exit t)
+    ("s" (move-sent-and-edit 1) nil :exit t)
+    ("a" (move-sent-and-edit -1) nil :exit t)
     ("1" (move-and-edit-field 1) nil)
     ("2" (move-and-edit-field 2) nil)
     ("3" (move-and-edit-field 3) nil)

@@ -19,25 +19,17 @@ you can watch the following demo for an idea of what it can do:
 | =C-c C-h=   | move point to head token of present token                                                            |
 | =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
 | =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
-| =M-n=       | unalign current sentence, go to the next one, and align it                                           |
-| =M-p=       | unalign current sentence, go to the previous one, and align it                                       |
+| =M-a=       | jump to the next sentence keeping current alignment                                                  |
+| =M-e=       | jump to the previous sentence, keeping current alignment                                             |
 | =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
 
 * interactive editing
-the default keybing =C-c C-e= calls a hydra for interactive editing of
-the token line at point. this enters an editing loop where you choose
-a field, edit it in a minibuffer, press =RET= to confirm the edit; you
-can quit by pressing any unbound key or by pressing =q=. if you delete
-the field's contents the empty field will be inserted automatically.
-
-* features
-- highlighting comments, and =upostag= and =deprel= fields
-- truncate lines by default
-- show newline and tab characters using =whitespace.el=
-- aligning and unaligning column fields
-- jumping to next or previous sentence
-- jump to the token at point's =head=
-- flycheck CoNLL-U buffers
+the default keybing =C-c C-e= calls a hydra for interactive
+editing. this enters an editing loop where you can navigate through
+the file or choose a field, edit it in a minibuffer, and press =RET=
+to confirm the edit; you can quit by pressing any unbound key or by
+pressing =q=. if you delete the field's contents the empty field will
+be inserted automatically.
 
 * flycheck
 ** setup
@@ -58,6 +50,14 @@ name, assuming it follows UD filename convention of starting with such
 a language code (as in =pt_bosque-ud-test.conllu=). if your file
 doesn't start with a language code, flycheck will invoke the script
 with the default value of =ud=, which might throw spurious errors.
+
+* other features
+- highlighting comments, and =upostag= and =deprel= fields
+- truncate lines by default
+- show newline and tab characters using =whitespace.el=
+- aligning and unaligning column fields
+- jumping to next or previous sentence
+- jump to the token at point's =head=
 
 * missing
   if you'd like to have a feature implemented, you should file at
@@ -99,7 +99,7 @@ installation:
    in your =.emacs=.
 
 * contributions
-  yes, please! even comments from experienced elispers are
-  welcome. just send an email or open an issue -- if you'd like a
-  suggestion on what to work on, take a look at the open issues or at
-  the missing features (above).
+yes, please! even comments from experienced elispers are welcome. just
+send an email or open an issue -- if you'd like a suggestion on what
+to work on, take a look at the open issues or at the missing features
+(above).

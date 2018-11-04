@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -80,7 +80,8 @@
     (define-key map [(control ?c) ?8] #'conllu-move-to-field-number-8)
     (define-key map [(control ?c) ?9] #'conllu-move-to-field-number-9)
     (define-key map [(control ?c) ?0] #'conllu-move-to-field-number-10)
-    (define-key map [(meta ?e)] #'conllu-forward-sentence)
+    (define-key map [(meta ?a)] #'conllu-previous-sentence)
+    (define-key map [(meta ?e)] #'conllu-next-sentence)
     (define-key map [(meta ?n)] #'conllu-next-sentence)
     (define-key map [(meta ?p)] #'conllu-previous-sentence)
     map)
