@@ -144,21 +144,26 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                  (conllu--move-to-field-number n)
                                  (conllu--edit-field)))
   (defhydra conllu-edit-hydra (:pre (conllu--barf-unless-at-token-line)
-                               :post (conllu--sentence-realign-if-aligned))
-      "
-_1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
-_2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
-_3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
-_4_: UPOS %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
-_5_: XPOS %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
-_6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
-_7_: HEAD %(nth 6 (conllu--line->fields (thing-at-point 'line t)))
-_8_: DEPREL %(nth 7 (conllu--line->fields (thing-at-point 'line t)))
-_9_: DEPS %(nth 8 (conllu--line->fields (thing-at-point 'line t)))
-_0_: MISC %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
-_q_: quit
+                                    :post (conllu--sentence-realign-if-aligned))
+    "
+^Navigate^             ^Edit^
+^^^^^^^^-----------------------------
+_n_: next tok      _1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
+_p_: prev tok      _2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
+_e_: next snt      _3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
+_a_: prev snt      _4_: UPOS %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
+^ ^                _5_: XPOS %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
+_q_: quit          _6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
+^ ^                _7_: HEAD %(nth 6 (conllu--line->fields (thing-at-point 'line t)))
+^ ^                _8_: DEPREL %(nth 7 (conllu--line->fields (thing-at-point 'line t)))
+^ ^                _9_: DEPS %(nth 8 (conllu--line->fields (thing-at-point 'line t)))
+^ ^                _0_: MISC %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
 
 "
+    ("n" (progn (forward-line) (conllu-forward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
+    ("p" (progn (forward-line -1) (conllu-backward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
+    ("e" (progn (forward-sentence) (forward-line) (conllu-forward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
+    ("a" (progn (backward-sentence) (conllu-backward-to-token-line) (conllu-edit-hydra/body)) nil :exit t)
     ("1" (move-and-edit-field 1) nil)
     ("2" (move-and-edit-field 2) nil)
     ("3" (move-and-edit-field 3) nil)
