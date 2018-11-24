@@ -140,6 +140,17 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                                 ds)))
         tk-))))
 
+(defun conllu--flycheck-error-display-toggler ()
+  "Return function that captures current `flycheck-display-errors-function' and
+toggles it on and off when called."
+  (let ((original flycheck-display-errors-function))
+    (lambda (to-on?)
+      (cond
+       ((and to-on? flycheck-mode)
+        (setq-local flycheck-display-errors-function nil))
+       (flycheck-mode (setq-local flycheck-display-errors-function original))))))
+
+
 (cl-labels ((move-tok-and-edit (n)
                                (forward-line n)
                                (when (conllu--not-looking-at-token)
@@ -151,39 +162,56 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                 (conllu-edit-hydra/body))
             (move-and-edit-field (n)
                                  (conllu--move-to-field-number n)
-                                 (conllu--edit-field)))
-  (defhydra conllu-edit-hydra (:pre (conllu--barf-unless-at-token-line)
-                                    :post (conllu--sentence-realign-if-aligned))
-    "
-^Navigate^             ^Edit^
-^^^^^^^^-----------------------------
-_l_: next tok      _1_: ID %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
-_k_: prev tok      _2_: FORM %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
-_s_: next snt      _3_: LEMMA %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
-_a_: prev snt      _4_: UPOS %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
-^ ^                _5_: XPOS %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
-_q_: quit          _6_: FEATS %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
-^ ^                _7_: HEAD %(nth 6 (conllu--line->fields (thing-at-point 'line t)))
-^ ^                _8_: DEPREL %(nth 7 (conllu--line->fields (thing-at-point 'line t)))
-^ ^                _9_: DEPS %(nth 8 (conllu--line->fields (thing-at-point 'line t)))
-^ ^                _0_: MISC %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
+                                 (conllu--edit-field))
+            (if-flycheck-next-error (n)
+                                    (if flycheck-mode
+                                        (flycheck-next-error n)
+                                      (user-error "Flycheck not setup."))))
+  (let ((error-display-toggler (conllu--flycheck-error-display-toggler)))
+    (defhydra conllu-edit-hydra (:pre
+                                 (progn
+                                   (conllu--barf-unless-at-token-line)
+                                   (funcall error-display-toggler t))
+                                 :post
+                                 (progn
+                                   (conllu--sentence-realign-if-aligned)
+                                   (funcall error-display-toggler nil)))
+      "
+^ ^  Navigate    |     Edit
+----------------------------------------
+_↑_: prev tok    |  _1_: ID     %(nth 0 (conllu--line->fields (thing-at-point 'line t)))
+_↓_: next tok    |  _2_: FORM   %(nth 1 (conllu--line->fields (thing-at-point 'line t)))
+_←_: prev snt    |  _3_: LEMMA  %(nth 2 (conllu--line->fields (thing-at-point 'line t)))
+_→_: next snt    |  _4_: UPOS   %(nth 3 (conllu--line->fields (thing-at-point 'line t)))
+^ ^              |  _5_: XPOS   %(nth 4 (conllu--line->fields (thing-at-point 'line t)))
+_<_: next error  |  _6_: FEATS  %(nth 5 (conllu--line->fields (thing-at-point 'line t)))
+_>_: prev error  |  _7_: HEAD   %(nth 6 (conllu--line->fields (thing-at-point 'line t)))
+^ ^              |  _8_: DEPREL %(nth 7 (conllu--line->fields (thing-at-point 'line t)))
+_q_: quit        |  _9_: DEPS   %(nth 8 (conllu--line->fields (thing-at-point 'line t)))
+^ ^              |  _0_: MISC   %(nth 9 (conllu--line->fields (thing-at-point 'line t)))
 
 "
-    ("l" (move-tok-and-edit 1) nil :exit t)
-    ("k" (move-tok-and-edit -1) nil :exit t)
-    ("s" (move-sent-and-edit 1) nil :exit t)
-    ("a" (move-sent-and-edit -1) nil :exit t)
-    ("1" (move-and-edit-field 1) nil)
-    ("2" (move-and-edit-field 2) nil)
-    ("3" (move-and-edit-field 3) nil)
-    ("4" (move-and-edit-field 4) nil)
-    ("5" (move-and-edit-field 5) nil)
-    ("6" (move-and-edit-field 6) nil)
-    ("7" (move-and-edit-field 7) nil)
-    ("8" (move-and-edit-field 8) nil)
-    ("9" (move-and-edit-field 9) nil)
-    ("0" (move-and-edit-field 10) nil)
-    ("q" nil nil)))
+      ;; nav commands
+      ("<up>"    (move-tok-and-edit -1)  nil :exit t)
+      ("<down>"  (move-tok-and-edit 1)   nil :exit t)
+      ("<left>"  (move-sent-and-edit -1) nil :exit t)
+      ("<right>" (move-sent-and-edit 1)  nil :exit t)
+      ;; flycheck error navigation
+      ("<" (if-flycheck-next-error -1) nil)
+      (">" (if-flycheck-next-error 1) nil)
+      ;; editing commands
+      ("1" (move-and-edit-field 1)  nil)
+      ("2" (move-and-edit-field 2)  nil)
+      ("3" (move-and-edit-field 3)  nil)
+      ("4" (move-and-edit-field 4)  nil)
+      ("5" (move-and-edit-field 5)  nil)
+      ("6" (move-and-edit-field 6)  nil)
+      ("7" (move-and-edit-field 7)  nil)
+      ("8" (move-and-edit-field 8)  nil)
+      ("9" (move-and-edit-field 9)  nil)
+      ("0" (move-and-edit-field 10) nil)
+      ;; exit
+      ("q" nil nil))))
 
 (provide 'conllu-edit)
 
