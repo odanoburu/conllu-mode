@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.3.1
+;; Version: 0.4.0
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -208,6 +208,43 @@ If sentence was aligned, unalign it and align the previous
 sentence."
   (interactive)
   (conllu--next-sentence -1))
+
+;;; points
+
+(defun conllu--sentence-begin-point ()
+  "Return point of the beginning of current sentence."
+  (save-excursion (backward-sentence) (point)))
+
+(defun conllu--sentence-tokens-begin-point ()
+  "Return point of the beginning of the first token line."
+  (save-excursion (backward-sentence)
+                  (conllu-forward-to-token-line)
+                  (point)))
+
+(defun conllu--sentence-end-point ()
+  "Return point of the end of current sentence."
+  (save-excursion (forward-sentence) (point)))
+
+(defun conllu--sentence-points ()
+  "Return points that delimit current sentence in a list."
+  (save-excursion
+    ;; can't use conllu--sentence-begin-point because they save
+    ;; excursion
+    (let ((bp (progn (backward-sentence)
+                     (point)))
+          (ep (progn (forward-sentence)
+                     (point))))
+      (list bp ep))))
+
+(defun conllu--sentence-tokens-points ()
+  "Return points that delimit the token lines of the sentence at point."
+  (save-excursion
+    (let ((bp (progn (backward-sentence)
+                     (conllu-forward-to-token-line)
+                     (point)))
+          (ep (progn (forward-sentence)
+                     (point))))
+      (list bp ep))))
 
 (provide 'conllu-move)
 
