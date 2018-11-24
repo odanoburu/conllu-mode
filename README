@@ -38,9 +38,12 @@ to be able to flycheck CoNLL-U buffers you need to:
 - obtain the =validate.py= script from the [[https://github.com/universaldependencies/tools][UD-tools]] repository (make
   sure you clone/download the whole repo, because the script depends
   on data and configuration files in there).
-- set the =conllu-flycheck-validate.py-path= variable to the filepath
-  of the =validate.py= script. you can use =M-x customize-variable
-  conllu-flycheck-validate.py-path= for this.
+- set the =conllu-flycheck-validate-python3-path= variable to the
+  filepath of the =validate.py= script. you can use =M-x
+  customize-variable conllu-flycheck-validate-python3-path= for this.
+
+if you'd like to use the old python2 validation script, you have to
+add it to the flycheck checkers list.
 
 ** use
 you can use the normal flycheck keybindings (here's [[https://www.masteringemacs.org/article/spotlight-flycheck-a-flymake-replacement][a nice
