@@ -24,6 +24,9 @@ you can watch the following demo for an idea of what it can do:
 | =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
 
 * interactive editing
+
+[[file:static/interactive-editing.png]]
+
 the default keybing =C-c C-e= calls a hydra for interactive
 editing. this enters an editing loop where you can navigate through
 the file or choose a field, edit it in a minibuffer, and press =RET=
@@ -32,6 +35,7 @@ pressing =q=. if you delete the field's contents the empty field will
 be inserted automatically.
 
 * flycheck
+[[file:static/flycheck-errors.png]]
 ** setup
 to be able to flycheck CoNLL-U buffers you need to:
 
