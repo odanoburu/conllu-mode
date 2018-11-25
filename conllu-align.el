@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 ;; Note: this code is a simplified version of the one in csv-mode.el.
@@ -199,6 +199,19 @@ sentence were not aligned (even if wrongly aligned)."
   (when (conllu--sentence-aligned?)
     (conllu-realign-sentence)
     nil))
+
+(defmacro conllu--with-sentence-alignment (&rest body)
+  "Evaluate BODY like `progn' preserving sentence alignment.
+This can be used to move between sentences maintaining
+alignment (i.e., if the source sentence was aligned, align the
+target sentence). If you simply need to realign a sentence after
+messing its alignment up, use `conllu--sentence-realign-if-aligned'."
+  (let ((aligned? (make-symbol "aligned?")))
+    `(let ((,aligned? (conllu--sentence-aligned?)))
+       (apply #'conllu-unalign-fields (conllu--sentence-points))
+       ,@body
+       (when ,aligned?
+         (apply #'conllu-align-fields (conllu--sentence-points))))))
 
 
 (provide 'conllu-align)

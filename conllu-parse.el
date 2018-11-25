@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -92,6 +92,12 @@
   (s-join "\n" (append
                 (conllu-sent-comments sent)
                 (mapcar #'conllu--token->string (conllu-sent-tokens sent)))))
+
+;;; aux
+(defun conllu--field-string (n)
+  "Return the string of the N th field.
+Assumes point is at token line."
+  (nth n (conllu--line->fields (thing-at-point 'line t))))
 
 (provide 'conllu-parse)
 

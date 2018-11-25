@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -43,23 +43,20 @@
 (require 'hydra)
 (require 's)
 (require 'conllu-align)
+(require 'conllu-flycheck)
 (require 'conllu-move)
+(require 'conllu-parse)
 (require 'conllu-thing)
 
-(defun conllu--extract-field ()
-  "Extract text from field at point and return it.
-Assumes point is at token line."
-  (let* ((start (progn (conllu--skip-backward-to-end-of-field)
-                       (point)))
-         (end (progn (conllu--skip-forward-to-end-of-field)
-                     (point))))
-    (delete-and-extract-region start end)))
+(defun conllu--clear-field ()
+  "Make the field at point the empty string."
+  (apply #'delete-region (conllu--field-points)))
 
 (defun conllu-clear-field ()
-  "Empty the field at point."
+  "Make the field at point empty (_)."
   (interactive)
   (conllu--barf-unless-at-token-line)
-  (conllu--extract-field)
+  (conllu--clear-field)
   (insert "_")
   (conllu--sentence-realign-if-aligned))
 
@@ -68,10 +65,10 @@ Assumes point is at token line."
 Assumes point is at token line. If field value is empty ('_'),
 put the empty string in the minibuffer instead of the original
 string."
-  (let* ((original-str (conllu--extract-field))
+  (let* ((original-str (apply #'buffer-substring-no-properties (conllu--field-points)))
          (str (if (s-equals? original-str "_") "" original-str)))
     (minibuffer-with-setup-hook (lambda () (insert str))
-      (call-interactively #'conllu--prompt-for-field-string))))
+      (call-interactively #'conllu--prompt-and-substitute-field-string))))
 
 (defun conllu-edit-field ()
   "Interactively edit the field at point."
@@ -80,10 +77,11 @@ string."
   (conllu--edit-field)
   (conllu--sentence-realign-if-aligned))
 
-(defun conllu--prompt-for-field-string (str)
-  "Prompt for string in the minibuffer and insert it at point.
+(defun conllu--prompt-and-substitute-field-string (str)
+  "Prompt for string in the minibuffer and substitute it for the string in the field at point.
 If string is blank, insert the empty field ('_')."
   (interactive "sString to place in current field:")
+  (conllu--clear-field)
   (if (s-blank? str)
       (insert "_")
     (insert str)))
@@ -141,80 +139,72 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
                                                 ds)))
         tk-))))
 
-(defun conllu--flycheck-error-display-toggler ()
-  "Return function that captures current `flycheck-display-errors-function' and
-toggles it on and off when called."
-  (let ((original flycheck-display-errors-function))
-    (lambda (to-on?)
-      (cond
-       ((and to-on? flycheck-mode)
-        (setq-local flycheck-display-errors-function nil))
-       (flycheck-mode (setq-local flycheck-display-errors-function original))))))
+(defun conllu--if-flycheck-error-string ()
+  "This function is used in `conllu-edit-hydra'."
+  (if (get-char-property (point) 'flycheck-error)
+      "Flycheck errors>"
+    ""))
 
-(defun conllu--flycheck-display-errors-at-point-in-hydra ()
-  (or (when flycheck-mode
-        (let ((errors (flycheck-overlay-errors-at (point))))
-          (when errors
-            (s-concat "Flycheck errors:\n"
-                      (s-join "\n" (mapcar #'flycheck-error-format-message-and-id errors))))))
-      ""))
-
-
-(cl-labels ((move-tok-and-edit (n)
-                               (forward-line n)
-                               (when (conllu--not-looking-at-token)
-                                 (forward-line (- n))
-                                 (conllu--next-sentence n)))
-            (move-sent-and-edit (n)
-                                (conllu--next-sentence n))
-            (move-and-edit-field (n)
-                                 (conllu--move-to-field-number n)
-                                 (conllu--edit-field))
-            (if-flycheck-next-error (n)
-                                    (if flycheck-mode
-                                        (flycheck-next-error n)
-                                      (user-error "Flycheck not setup."))))
-  (let ((error-display-toggler (conllu--flycheck-error-display-toggler)))
+(let ((flycheck-original-error-delay flycheck-display-errors-delay))
+  (cl-labels ((move-tok (n)
+                        (forward-line n)
+                        (when (conllu--not-looking-at-token)
+                          (forward-line (- n))
+                          (conllu--next-sentence n)))
+              (move-sent (n)
+                         (conllu--next-sentence n))
+              (move-and-edit-field (n)
+                                   (conllu--move-to-field-number n)
+                                   (conllu-edit-field))
+              (toggle-error-display-delay ()
+                                          (if (zerop flycheck-display-errors-delay)
+                                              (setq-local flycheck-display-errors-delay
+                                                          flycheck-original-error-delay)
+                                            (setq-local flycheck-display-errors-delay 0)))
+              (if-flycheck-next-error (n)
+                                      (if flycheck-mode
+                                          (conllu--flycheck-next-error n)
+                                        (user-error "Flycheck not setup."))))
     (defhydra conllu-edit-hydra (:pre
                                  (progn
                                    (conllu--barf-unless-at-token-line)
-                                   (funcall error-display-toggler t))
+                                   (toggle-error-display-delay))
                                  :post
                                  (progn
                                    (conllu--sentence-realign-if-aligned)
-                                   (funcall error-display-toggler nil)))
+                                   (toggle-error-display-delay)))
       "
 ^ ^  Navigate    |     Edit
 ----------------------------------------
-_↑_: prev tok    |  _1_: ID     %s(nth 0 (conllu--line->fields (thing-at-point 'line t)))
-_↓_: next tok    |  _2_: FORM   %s(nth 1 (conllu--line->fields (thing-at-point 'line t)))
-_←_: prev snt    |  _3_: LEMMA  %s(nth 2 (conllu--line->fields (thing-at-point 'line t)))
-_→_: next snt    |  _4_: UPOS   %s(nth 3 (conllu--line->fields (thing-at-point 'line t)))
-^ ^              |  _5_: XPOS   %s(nth 4 (conllu--line->fields (thing-at-point 'line t)))
-_<_: next error  |  _6_: FEATS  %s(nth 5 (conllu--line->fields (thing-at-point 'line t)))
-_>_: prev error  |  _7_: HEAD   %s(nth 6 (conllu--line->fields (thing-at-point 'line t)))
-^ ^              |  _8_: DEPREL %s(nth 7 (conllu--line->fields (thing-at-point 'line t)))
-_q_: quit        |  _9_: DEPS   %s(nth 8 (conllu--line->fields (thing-at-point 'line t)))
-^ ^              |  _0_: MISC   %s(nth 9 (conllu--line->fields (thing-at-point 'line t)))
-%s(conllu--flycheck-display-errors-at-point-in-hydra)"
+_↑_: prev tok    |  _1_: ID     %s(conllu--field-string 0)
+_↓_: next tok    |  _2_: FORM   %s(conllu--field-string 1)
+_←_: prev snt    |  _3_: LEMMA  %s(conllu--field-string 2)
+_→_: next snt    |  _4_: UPOS   %s(conllu--field-string 3)
+^ ^              |  _5_: XPOS   %s(conllu--field-string 4)
+_<_: next error  |  _6_: FEATS  %s(conllu--field-string 5)
+_>_: prev error  |  _7_: HEAD   %s(conllu--field-string 6)
+^ ^              |  _8_: DEPREL %s(conllu--field-string 7)
+_q_: quit        |  _9_: DEPS   %s(conllu--field-string 8)
+^ ^              |  _0_: MISC   %s(conllu--field-string 9)
+%s(conllu--if-flycheck-error-string)"
       ;; nav commands
-      ("<up>"    (move-tok-and-edit -1)  nil)
-      ("<down>"  (move-tok-and-edit 1)   nil)
-      ("<left>"  (move-sent-and-edit -1) nil)
-      ("<right>" (move-sent-and-edit 1)  nil)
+      ("<up>"    (move-tok  -1) nil)
+      ("<down>"  (move-tok   1) nil)
+      ("<left>"  (move-sent -1) nil)
+      ("<right>" (move-sent  1) nil)
       ;; flycheck error navigation
       ("<" (if-flycheck-next-error -1) nil)
-      (">" (if-flycheck-next-error 1) nil)
+      (">" (if-flycheck-next-error  1) nil)
       ;; editing commands
-      ("1" (move-and-edit-field 1)  nil)
-      ("2" (move-and-edit-field 2)  nil)
-      ("3" (move-and-edit-field 3)  nil)
-      ("4" (move-and-edit-field 4)  nil)
-      ("5" (move-and-edit-field 5)  nil)
-      ("6" (move-and-edit-field 6)  nil)
-      ("7" (move-and-edit-field 7)  nil)
-      ("8" (move-and-edit-field 8)  nil)
-      ("9" (move-and-edit-field 9)  nil)
+      ("1" (move-and-edit-field  1) nil)
+      ("2" (move-and-edit-field  2) nil)
+      ("3" (move-and-edit-field  3) nil)
+      ("4" (move-and-edit-field  4) nil)
+      ("5" (move-and-edit-field  5) nil)
+      ("6" (move-and-edit-field  6) nil)
+      ("7" (move-and-edit-field  7) nil)
+      ("8" (move-and-edit-field  8) nil)
+      ("9" (move-and-edit-field  9) nil)
       ("0" (move-and-edit-field 10) nil)
       ;; exit
       ("q" nil nil))))

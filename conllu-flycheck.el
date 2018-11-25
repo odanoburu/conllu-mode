@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -136,6 +136,11 @@ If you don't have the script you should obtain it from URL
   :predicate (lambda () (buffer-file-name)))
 
 (add-to-list 'flycheck-checkers 'conllu-validate-python3)
+
+(defun conllu--flycheck-next-error (n)
+  "Move to next flycheck error preserving sentence alignment."
+  (conllu--with-sentence-alignment
+   (flycheck-next-error n)))
 
 (provide 'conllu-flycheck)
 

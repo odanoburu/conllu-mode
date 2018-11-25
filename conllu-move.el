@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -188,12 +188,9 @@ With negative argument, move backward to start of sentence."
   "Jump to next sentence.
 If sentence was aligned, unalign it and align the next
 sentence. With negative argument, move backward."
-  (let ((aligned? (conllu--sentence-aligned?)))
-    (apply #'conllu-unalign-fields (conllu--sentence-points))
-    (conllu--forward-sentence n)
-    (conllu--move-to-token-line n)
-    (when aligned?
-      (apply #'conllu-align-fields (conllu--sentence-points)))))
+  (conllu--with-sentence-alignment
+     (conllu--forward-sentence n)
+     (conllu--move-to-token-line n)))
 
 (defun conllu-next-sentence ()
   "Jump to next sentence.
@@ -210,6 +207,15 @@ sentence."
   (conllu--next-sentence -1))
 
 ;;; points
+
+(defun conllu--field-points ()
+  "Return points that delimit the field at point."
+  (save-excursion
+    (let ((start (progn (conllu--skip-backward-to-end-of-field)
+                        (point)))
+          (end (progn (conllu--skip-forward-to-end-of-field)
+                      (point))))
+      (list start end))))
 
 (defun conllu--sentence-begin-point ()
   "Return point of the beginning of current sentence."
@@ -245,6 +251,7 @@ sentence."
           (ep (progn (forward-sentence)
                      (point))))
       (list bp ep))))
+
 
 (provide 'conllu-move)
 
