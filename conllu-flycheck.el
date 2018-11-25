@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.1
+;; Version: 0.4.2
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -60,6 +60,15 @@
   :group 'conllu
   :set #'conllu--set-valid-path-variable)
 
+(defcustom conllu-flycheck-error-threshold
+  30
+  "Maximum number of errors to be shown.
+
+Argument passed to validate script. If this number is too high,
+emacs might slow down when displaying the errors."
+  :type 'integer
+  :group 'conllu)
+
 (defcustom conllu-flycheck-validation-level
   "5"
   "Set validation level of the validate script."
@@ -103,7 +112,7 @@ If you don't have the script you should obtain it from URL
 `conllu-flycheck-validate-python2-path' with its path."
   :command ("python2" (eval conllu-flycheck-validate-python2-path)
             "--lang" (eval (conllu--derive-lang-code-from-filename))
-            "--max-err" "0"
+            "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
             source)
   :error-patterns
   ((error line-start "[Line" (one-or-more space) line "]: " (message) line-end))
@@ -118,7 +127,7 @@ If you don't have the script you should obtain it from URL
 `conllu-flycheck-validate-python3-path' with its path."
   :command ("python3" (eval conllu-flycheck-validate-python3-path)
             "--lang" (eval (conllu--derive-lang-code-from-filename))
-            "--max-err" "0"
+            "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
             "--level" (eval conllu-flycheck-validation-level)
             source)
   :error-patterns
