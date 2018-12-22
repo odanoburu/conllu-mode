@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.4
+;; Version: 0.4.5
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -90,8 +90,10 @@ emacs might slow down when displaying the errors."
 
 You must set `conllu-flycheck-validate-python2-path' or
 `conllu-flycheck-validate-python3-path' are to a non-nil value."
-  (when (or conllu-flycheck-validate-python3-path
-            conllu-flycheck-validate-python2-path)
+  (when (or (boundp 'conllu-flycheck-validate-python3-path)
+	    conllu-flycheck-validate-python3-path
+	    (boundp 'conllu-flycheck-validate-python2-path)
+	    conllu-flycheck-validate-python2-path)
     (flycheck-mode)))
 
 ;; TODO: is it better to ask lang whenever a new file is opened?
