@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.3
+;; Version: 0.4.4
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -131,7 +131,8 @@
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode)
-  (conllu-invoke-flycheck-if-checker-available))
+  (when conllu-flycheck-on?
+    (conllu-invoke-flycheck-if-checker-available)))
 
 
 ;;;;###autoload

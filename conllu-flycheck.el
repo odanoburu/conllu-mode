@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.3
+;; Version: 0.4.4
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -78,6 +78,12 @@ emacs might slow down when displaying the errors."
          (if (member val '("1" "2" "3" "4" "5"))
              (set-default sym val)
            (user-error "~s: not a valid validation level. Must be integer between 1-5."))))
+
+(defcustom conllu-flycheck-on?
+  t
+  "Should flycheck-mode be turned on automatically when conllu-mode is invoked?"
+  :type 'boolean
+  :group 'conllu)
 
 (defun conllu-invoke-flycheck-if-checker-available ()
   "Invoke `flycheck-mode' if a checker is available.
