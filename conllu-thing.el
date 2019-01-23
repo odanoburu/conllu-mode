@@ -86,11 +86,12 @@ Return point to original position."
   id form lemma upos xpos feats head deprel deps misc)
 
 ;;; all fields are strings, except for ID and HEAD (which are either
-;;; integers or lists (nil if empty)) and DEPS (list of lists of
-;;; (integer . string ...)
+;;; integers or lists (nil if empty)), FEATS (list of lists of
+;;; string), and DEPS (list of lists of (integer . string ...)
 (defun conllu--make-token (id fo le up xp fe he dr ds m)
   "Turn CoNLL-U line field strings into a token."
-  (conllu--token-create (conllu--string->token-id id) fo le up xp fe
+  (conllu--token-create (conllu--string->token-id id) fo le up xp
+                        (conllu--string->token-feats fe)
                         (conllu--string->token-head he) dr
                         (conllu--string->token-deps ds) m))
 
@@ -124,6 +125,21 @@ Return point to original position."
                        #'number-to-string
                        (lambda (n n2) (format "%d.%d" n n2))
                        (lambda (n n2) (format "%d-%d" n n2))))
+
+(defun conllu--string->token-feats (feats)
+  (if (equal feats "_")
+      nil
+    (let ((pairs (s-split "|" feats t)))
+      (mapcar (lambda (feat) (s-split "=" feat t)) pairs))))
+
+(defun conllu--token-feats->string (feats)
+  (if feats
+      (let ((pairs (mapcar (lambda (feat) (s-join "=" feat)) feats)))
+        (s-join "|" pairs))
+    "_"))
+
+(defun conllu--token-feat (key tk)
+  (cl-second (assoc key (conllu-token-feats tk))))
 
 (defun conllu--token-head->string (head)
   "Return the string representation of CoNLL-U HEAD."
@@ -196,6 +212,26 @@ the first of the two numbers."
     (`(empty ,n ,_) n)
     (`(multi ,n ,_) n)
     ((pred numberp) id)))
+
+(defun conllu--token-key->function (key)
+  (pcase key
+    (:id #'conllu-token-id)
+    (:form #'conllu-token-form)
+    (:lemma #'conllu-token-lemma)
+    (:upos #'conllu-token-upos)
+    (:xpos #'conllu-token-xpos)
+    (`(:feat ,feat) (apply-partially #'conllu--token-feat feat))
+    (:feats #'conllu-token-feats)
+    (:head #'conllu-token-head)
+    (:deprel #'conllu-token-deprel)
+    ;; (`(:dep dep) (apply-partially #'conllu-token-dep dep))
+    (:deps #'conllu-token-deps)
+    ;; (`(:misc-pair key) (apply-partially #'conllu-token-misc-pair key))
+    (:misc #'conllu-token-misc)
+    (_ (lambda (tk) (user-error "wrong format for key %s" key)))))
+
+(defun conllu--token-get-key (tk key)
+  (funcall (conllu--token-key->function key) tk))
 
 (provide 'conllu-thing)
 

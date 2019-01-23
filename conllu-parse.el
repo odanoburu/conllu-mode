@@ -40,6 +40,7 @@
 (require 'conllu-thing)
 
 (require 's)
+(require 'seq)
 
 
 ;;; parse token line
@@ -71,6 +72,11 @@
          (tks (mapcar #'conllu--line->token (cdr (assoc nil ls-by)))))
     (conllu--sent-make cs tks)))
 
+(defun conllu--parse-sent-at-point ()
+  (seq-let (bp ep) (conllu--sentence-points)
+    (let ((sent-str (buffer-substring-no-properties bp ep)))
+      (conllu--string->sent sent-str))))
+
 ;;; print token
 (defun conllu--token->string (token)
   "Print CoNLL-U TOKEN to a string."
@@ -80,7 +86,7 @@
                 (conllu-token-lemma token)
                 (conllu-token-upos token)
                 (conllu-token-xpos token)
-                (conllu-token-feats token)
+                (conllu--token-feats->string (conllu-token-feats token))
                 (conllu--token-head->string (conllu-token-head token))
                 (conllu-token-deprel token)
                 (conllu--token-deps->string (conllu-token-deps token))
