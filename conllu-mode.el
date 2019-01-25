@@ -135,8 +135,6 @@
     (conllu-invoke-flycheck-if-checker-available)))
 
 
-;;;;###autoload
-;(autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
 

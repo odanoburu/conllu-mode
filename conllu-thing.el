@@ -85,6 +85,9 @@ Return point to original position."
                             (:copier nil))
   id form lemma upos xpos feats head deprel deps misc)
 
+(defun conllu--token-meta? (tk)
+  (consp (conllu-token-id tk)))
+
 ;;; all fields are strings, except for ID and HEAD (which are either
 ;;; integers or lists (nil if empty)), FEATS (list of lists of
 ;;; string), and DEPS (list of lists of (integer . string ...)
