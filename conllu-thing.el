@@ -231,7 +231,7 @@ the first of the two numbers."
     (:deps #'conllu-token-deps)
     ;; (`(:misc-pair key) (apply-partially #'conllu-token-misc-pair key))
     (:misc #'conllu-token-misc)
-    (_ (lambda (tk) (user-error "wrong format for key %s" key)))))
+    (_ (user-error "wrong format for key %s" key))))
 
 (defun conllu--token-get-key (tk key)
   (funcall (conllu--token-key->function key) tk))

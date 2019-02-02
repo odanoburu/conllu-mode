@@ -52,7 +52,7 @@
 (defgroup conllu nil
   "Support for CoNLL-U files."
   :group 'data
-  :link  '(url-link "http://universaldependencies.org/"))
+  :link  '(url-link "http://universaldependencies.org/format.html"))
 
 (defcustom conllu-tab-width
   2
@@ -131,8 +131,7 @@
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode)
-  (when conllu-flycheck-on?
-    (conllu-invoke-flycheck-if-checker-available)))
+  (conllu--invoke-flycheck-if))
 
 
 ;;;###autoload

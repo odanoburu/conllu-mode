@@ -42,21 +42,34 @@ to be able to flycheck CoNLL-U buffers you need to:
 - obtain the =validate.py= script from the [[https://github.com/universaldependencies/tools][UD-tools]] repository (make
   sure you clone/download the whole repo, because the script depends
   on data and configuration files in there).
-- set the =conllu-flycheck-validate-python3-path= variable to the
-  filepath of the =validate.py= script. you can use =M-x
-  customize-variable conllu-flycheck-validate-python3-path= for this.
+- make =validate.py= available somewhere in your =PATH=. you can
+  symlink it:
+  : ln -st /home/user/.local/bin/ /home/user/tools/validate.py
+- do =M-x customize-variable RET conllu-flycheck-checkers= and select
+  the checkers you want Flycheck to use.
 
-if you'd like to use the old python2 validation script, you have to
-add it to the flycheck checkers list.
 
 ** use
-you can use the normal flycheck keybindings (here's [[https://www.masteringemacs.org/article/spotlight-flycheck-a-flymake-replacement][a nice
-summary]]). note that the =validate.py= demands a two-letter language
-code to do its validation; =conllu-mode= infers this from the file
-name, assuming it follows UD filename convention of starting with such
-a language code (as in =pt_bosque-ud-test.conllu=). if your file
-doesn't start with a language code, flycheck will invoke the script
-with the default value of =ud=, which might throw spurious errors.
+you can use the normal flycheck keybindings (here's [[https://www.masteringemacs.org/article/spotlight-flycheck-a-flymake-replacement][a nice summary]]),
+or you can enter interactive editing mode and use =<= and =>= to
+navigate between errors.
+
+- By default =conllu-mode= will ask if you would like to check every
+  CoNLL-U buffer you open; you can change this behavior with =M-x
+  customize-variable RET conllu-flycheck-on?=. You can also call
+  =conllu-flycheck= to invoke Flycheck manually.
+
+- note that the =validate.py= demands a two-letter language code to do
+  its validation; =conllu-mode= tries to infer this from the file
+  name, assuming it follows UD filename convention of starting with
+  such a language code (as in =pt_bosque-ud-test.conllu=). if your
+  file doesn't start with a language code, =conllu-mode= will ask you
+  for a language code; if you don't supply anything, Flycheck will
+  invoke the validate script with the default value of =ud=.
+
+- you can customize validation level and the maximum number of errors
+  shown by customizing other variables. See =M-x customize-group
+  conllu=.
 
 * other features
 - highlighting comments, and =upostag= and =deprel= fields
@@ -100,10 +113,10 @@ installation:
    the autoloads are properly set with
    #+BEGIN_SRC elisp
      (add-to-list 'load-path "~/some/path/conllu-mode")
-     (autoload 'conllu-mode "conllu-mode" "Major mode for editing CoNLL-U files." t)
-     (add-to-list 'auto-mode-alist '("\\.conllu\\'" . conllu-mode))
+     (require 'conllu-mode)
    #+END_SRC
    in your =.emacs=.
+
 
 * contributions
 yes, please! even comments from experienced elispers are welcome. just

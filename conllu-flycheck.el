@@ -39,116 +39,132 @@
 (require 'rx)
 (require 'flycheck)
 
-(defun conllu--set-valid-path-variable (sym val)
-  (when val
-    (let ((fp (file-truename val)))
-      (if (file-exists-p fp)
-          (set-default sym fp)
-        (user-error "File ~s does not exist" fp)))))
 
-(defcustom conllu-flycheck-validate-python2-path
+(defcustom conllu-flycheck-checkers
   nil
-  "Set the path to the validate python 2 script."
-  :type '(choice file (const nil))
-  :group 'conllu
-  :set #'conllu--set-valid-path-variable)
+  "CoNLL-U checkers to be used by Flycheck."
+  :type '(set (const :tag "Python validate script" 'conllu-validate-python3))
+  :group 'conllu)
 
-(defcustom conllu-flycheck-validate-python3-path
-  nil
-  "Set the path to the validate python 3 script."
-  :type '(choice file (const nil))
-  :group 'conllu
-  :set #'conllu--set-valid-path-variable)
 
 (defcustom conllu-flycheck-error-threshold
   30
-  "Maximum number of errors to be shown.
+  "Maximum number of errors to be shown by flycheck.
 
-Argument passed to validate script. If this number is too high,
-emacs might slow down when displaying the errors."
-  :type 'integer
+Argument passed to checker. If this number is too high, emacs
+might slow down when displaying the errors."
+  :type  'integer
   :group 'conllu)
+
 
 (defcustom conllu-flycheck-validation-level
   "5"
-  "Set validation level of the validate script."
-  :type 'string
+  "Set validation level of the flycheck checker.
+
+The value will be ignored if the checker does not support it."
   :group 'conllu
-  :set (lambda (sym val)
-         (if (member val '("1" "2" "3" "4" "5"))
-             (set-default sym val)
-           (user-error "~s: not a valid validation level. Must be integer between 1-5."))))
+  :type '(radio (const :tag "1")
+                (const :tag "2")
+                (const :tag "3")
+                (const :tag "4")
+                (const :tag "5")))
+
 
 (defcustom conllu-flycheck-on?
-  t
+  'ask
   "Should flycheck-mode be turned on automatically when conllu-mode is invoked?"
-  :type 'boolean
+  :type '(choice (const :tag "Yes" 'yes)
+                 (const :tag "No" 'no)
+                 (other :tag "Ask" 'ask))
   :group 'conllu)
 
-(defun conllu-invoke-flycheck-if-checker-available ()
-  "Invoke `flycheck-mode' if a checker is available.
 
-You must set `conllu-flycheck-validate-python2-path' or
-`conllu-flycheck-validate-python3-path' are to a non-nil value."
-  (when (or (boundp 'conllu-flycheck-validate-python3-path)
-	    conllu-flycheck-validate-python3-path
-	    (boundp 'conllu-flycheck-validate-python2-path)
-	    conllu-flycheck-validate-python2-path)
-    (flycheck-mode)))
-
-;; TODO: is it better to ask lang whenever a new file is opened?
-(defun conllu--derive-lang-code-from-filename ()
+(defun conllu--try-derive-lang-code-from-filename ()
   "Return two-letter language code from filename if available, else return nil.
 
 UD treebanks filenames usually start with a two-letter language
 code and an underline character, which is what we try to extract
-here. If not available, we return 'ud', which is the code for
-unspecified language."
+here."
   (let ((f (file-name-nondirectory (buffer-file-name))))
-    (if (s-matches-p (rx string-start (group letter letter) ?\_)
-                     f)
-        (s-left 2 f)
-      "ud")))
+    (when (s-matches-p (rx string-start (group letter letter) ?\_)
+                       f)
+      (s-left 2 f))))
+
+
+(defun conllu--read-string-matching (prompt predicate &optional default-value)
+  "Read a string that matches PREDICATE from the minibuffer, prompting with string PROMPT.
+
+Loops until a satisfactory string is found. DEFAULT-VALUE behaves
+as in `read-string'"
+  (cl-loop
+   for x = (read-string prompt nil nil default-value)
+   while (not (funcall predicate x))
+   finally (return x)))
+
+
+(defun conllu--flycheck-lang ()
+  (or (conllu--try-derive-lang-code-from-filename)
+      (conllu--read-string-matching "2-character language code or nothing for simple UD validation:"
+                                    (lambda (in)
+                                      (= 2 (length (s-trim in)))))))
+
+(defvar-local conllu-flycheck-lang "ud"
+  "2-character language code corresponding to the language of the current buffer.")
+
+(defun conllu-flycheck ()
+  "Invoke flycheck when checkers are available. Will prompt for
+language."
+  (interactive)
+  (if conllu-flycheck-checkers
+      (progn
+        (conllu--add-checkers)
+        (setq-local conllu-flycheck-lang (or (conllu--flycheck-lang)
+                                             conllu-flycheck-lang))
+        (flycheck-mode 1))
+    (user-error "No checker configured. Customize variable `conllu-flycheck-checkers'")))
+
+
+(defun conllu--invoke-flycheck-if ()
+  "Invoke `flycheck-mode' if a checker is available and according
+to `conllu-flycheck-on?'."
+  (when conllu-flycheck-checkers
+    (cl-case conllu-flycheck-on?
+      (yes (conllu-flycheck))
+      (ask (when (y-or-n-p "Enable flycheck for this buffer?")
+             (conllu-flycheck))))))
+
 
 ;; TODO: highlight only the column (is this desirable? what if the
 ;; column is out of view because of truncate lines?)
-(flycheck-define-checker conllu-validate-python2
-  "A CoNLL-U syntax checker using the validate python 2 script.
-
-If you don't have the script you should obtain it from URL
-`www.github.com/universaldependencies/tools' and then customize
-`conllu-flycheck-validate-python2-path' with its path."
-  :command ("python2" (eval conllu-flycheck-validate-python2-path)
-            "--lang" (eval (conllu--derive-lang-code-from-filename))
-            "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
-            source)
-  :error-patterns
-  ((error line-start "[Line" (one-or-more space) line "]: " (message) line-end))
-  :modes conllu-mode
-  :predicate (lambda () (buffer-file-name)))
-
 (flycheck-define-checker conllu-validate-python3
   "A CoNLL-U syntax checker using the validate python 3 script.
 
 If you don't have the script you should obtain it from URL
-`www.github.com/universaldependencies/tools' and then customize
-`conllu-flycheck-validate-python3-path' with its path."
-  :command ("python3" (eval conllu-flycheck-validate-python3-path)
-            "--lang" (eval (conllu--derive-lang-code-from-filename))
+`www.github.com/universaldependencies/tools' and then add it to
+your PATH variable."
+  :command ("validate.py"
+            "--lang" (eval conllu-flycheck-lang)
             "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
             "--level" (eval conllu-flycheck-validation-level)
             source)
   :error-patterns
-  ((error line-start "[Line" (one-or-more space) line (zero-or-more (not (any ?\]))) "]: " (message) line-end))
+  ((error line-start "[Line" (one-or-more space) line (zero-or-more (not (any ?\]))) "]: "
+          (message) line-end))
   :modes conllu-mode
   :predicate (lambda () (buffer-file-name)))
 
-(add-to-list 'flycheck-checkers 'conllu-validate-python3)
 
 (defun conllu--flycheck-next-error (n)
   "Move to next flycheck error preserving sentence alignment."
   (conllu--with-sentence-alignment
    (flycheck-next-error n)))
+
+
+(defun conllu--add-checkers ()
+  "Add conllu checkers in `conllu-flycheck-checkers' to `flycheck-checkers'."
+  (mapcar (lambda (checker)
+            (add-to-list 'flycheck-checkers checker))
+          conllu-flycheck-checkers))
 
 (provide 'conllu-flycheck)
 
