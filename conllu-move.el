@@ -136,11 +136,11 @@ if root, moves to beginning of sentence."
          (h (conllu-token-head token)))
     (cond
      ((conllu--meta-token-p token)
-      (user-error "%s" "Error: meta token has no HEAD"))
+      (user-error "Meta token has no HEAD"))
      ((equal h nil)
-      (user-error "%s" "Error: token has no head"))
+      (user-error "Token has no HEAD"))
      ((equal h 0)
-      (user-error "%s" "Error: ROOT")))
+      (user-error "ROOT node has no HEAD")))
     (conllu--move-to-head h)))
 
 (defun conllu--move-to-head (head)
@@ -148,7 +148,7 @@ if root, moves to beginning of sentence."
   (conllu--barf-unless-at-token-line)
   (let ((token (conllu--line->maybe-token (thing-at-point 'line t))))
     (unless token
-      (user-error "%s" "Error: malformed token line"))
+      (user-error "Malformed token line at point"))
     (let ((id (conllu-token-id token)))
       (cond
        ((conllu--id> id head)
@@ -179,15 +179,15 @@ Argument N is either 1 or -1, specifying which direction to go."
 
 (defun conllu--forward-sentence (n)
   "Jump to end of sentence.
-With negative argument, move backward to start of sentence."
+With negative N, move backward to start of sentence."
   (interactive)
   (forward-sentence n)
   (forward-char n))
 
 (defun conllu--next-sentence (n)
   "Jump to next sentence.
-If sentence was aligned, unalign it and align the next
-sentence. With negative argument, move backward."
+If sentence was aligned, unalign it and align the next sentence.
+With negative N, move backward."
   (conllu--with-sentence-alignment
      (conllu--forward-sentence n)
      (conllu--move-to-token-line n)))

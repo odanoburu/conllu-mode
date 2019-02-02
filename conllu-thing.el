@@ -43,7 +43,8 @@
 
 ;;; looking-at functions
 (defsubst conllu--looking-at (regexp)
-  "Call `looking-at' at the beginning-of-line and return its result.
+  "Call `looking-at' REGEXP at the `beginning-of-line' and return its result.
+
 Return point to original position."
   (save-excursion (beginning-of-line)
                   (looking-at regexp)))
@@ -86,13 +87,17 @@ Return point to original position."
   id form lemma upos xpos feats head deprel deps misc)
 
 (defun conllu--token-meta? (tk)
+  "Return t if token TK is empty or multiword."
   (consp (conllu-token-id tk)))
 
 ;;; all fields are strings, except for ID and HEAD (which are either
 ;;; integers or lists (nil if empty)), FEATS (list of lists of
 ;;; string), and DEPS (list of lists of (integer . string ...)
 (defun conllu--make-token (id fo le up xp fe he dr ds m)
-  "Turn CoNLL-U line field strings into a token."
+  "Turn CoNLL-U line field strings into a token.
+
+ID, FO, LE, UP, XP, FE, HE, DR, DS, and M correspond to each
+CoNLL-U field respectively."
   (conllu--token-create (conllu--string->token-id id) fo le up xp
                         (conllu--string->token-feats fe)
                         (conllu--string->token-head he) dr
@@ -100,10 +105,11 @@ Return point to original position."
 
 (defun conllu--string->token-id (id)
   "Turn ID string into integer or list representation.
- IDs of regular tokens are integers, and those of meta tokens are
- represented as lists of three elements: the first element is the
- kind of meta-token ('empty or 'multi), and the rest are
- integers."
+
+IDs of regular tokens are integers, and those of meta tokens are
+represented as lists of three elements: the first element is the
+kind of meta-token ('empty or 'multi), and the rest are
+integers."
   (pcase (s-slice-at "[\.-]" id)
     (`(,n) (string-to-number n))
     (`(,n ,sep-n2)
@@ -111,8 +117,8 @@ Return point to original position."
            (sep (substring sep-n2 0 1))
            (n2 (string-to-number (substring sep-n2 1))))
        (pcase sep
-           ("." (list 'empty n n2))
-           ("-" (list 'multi n n2)))))
+         ("." (list 'empty n n2))
+         ("-" (list 'multi n n2)))))
     (_ (user-error "Error: invalid CoNLL-U ID %s" id))))
 
 (defun conllu--do-token-id (id w-fn e-fn m-fn)
@@ -130,18 +136,21 @@ Return point to original position."
                        (lambda (n n2) (format "%d-%d" n n2))))
 
 (defun conllu--string->token-feats (feats)
+  "Split FEATS string into list of lists."
   (if (equal feats "_")
       nil
     (let ((pairs (s-split "|" feats t)))
       (mapcar (lambda (feat) (s-split "=" feat t)) pairs))))
 
 (defun conllu--token-feats->string (feats)
+  "Format FEATS to string."
   (if feats
       (let ((pairs (mapcar (lambda (feat) (s-join "=" feat)) feats)))
         (s-join "|" pairs))
     "_"))
 
 (defun conllu--token-feat (key tk)
+  "Get value of feature KEY from token TK."
   (cl-second (assoc key (conllu-token-feats tk))))
 
 (defun conllu--token-head->string (head)
@@ -217,6 +226,7 @@ the first of the two numbers."
     ((pred numberp) id)))
 
 (defun conllu--token-key->function (key)
+  "Return function that takes token and returns value corresponding to KEY."
   (pcase key
     (:id #'conllu-token-id)
     (:form #'conllu-token-form)
@@ -231,9 +241,10 @@ the first of the two numbers."
     (:deps #'conllu-token-deps)
     ;; (`(:misc-pair key) (apply-partially #'conllu-token-misc-pair key))
     (:misc #'conllu-token-misc)
-    (_ (user-error "wrong format for key %s" key))))
+    (_ (user-error "Wrong format for key %s" key))))
 
 (defun conllu--token-get-key (tk key)
+  "Return value corresponding to KEY in token TK."
   (funcall (conllu--token-key->function key) tk))
 
 (provide 'conllu-thing)

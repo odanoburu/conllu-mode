@@ -45,7 +45,7 @@
 
 ;;; parse token line
 (defun conllu--line->fields (line)
-  "Split a string into a list of field strings at TAB separator."
+  "Split a LINE string into a list of field strings at TAB separator."
   (mapcar #'s-trim (s-split "\t" line)))
 
 (defun conllu--line->maybe-token (line)
@@ -61,7 +61,7 @@
   (let ((tk (conllu--line->maybe-token line)))
     (if tk
         tk
-      (user-error "%s" "Error: malformed token line"))))
+      (user-error "Malformed token line : %s" line))))
 
 ;;; parse sent
 (defun conllu--string->sent (sent)
@@ -73,6 +73,7 @@
     (conllu--sent-make cs tks)))
 
 (defun conllu--parse-sent-at-point ()
+  "Parse sentence at point."
   (seq-let (bp ep) (conllu--sentence-points)
     (let ((sent-str (buffer-substring-no-properties bp ep)))
       (conllu--string->sent sent-str))))

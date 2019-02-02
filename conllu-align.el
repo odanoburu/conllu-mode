@@ -61,9 +61,10 @@ means left align text and right align numbers."
   :group 'conllu-align-group)
 
 (defun conllu--column-widths ()
+  "Gather column widths."
   (let ((widths '()))
     ;; Construct list of column widths:
-    (while (not (eobp))                   ; for each token...
+    (while (not (eobp))                 ; for each token...
       (or (conllu--not-looking-at-token)
           (let ((w widths)
                 (col (current-column))
@@ -75,12 +76,16 @@ means left align text and right align numbers."
                   (if (> x (car w)) (setcar w x))
                 (setq w (list x)
                       widths (nconc widths w)))
-              (or (eolp) (forward-char))  ; Skip separator.
+              (or (eolp) (forward-char)) ; Skip separator.
               (setq w (cdr w) col (current-column)))))
       (forward-line))
     widths))
 
 (defun conllu--make-overlay (beg end &optional buffer front-advance rear-advance props)
+  "Make conllu overlay.
+
+BEG, END, BUFFER, FRONT-ADVANCE, REAR-ADVANCE, and PROPS behave
+as in `make-overlay'."
   (let ((o (make-overlay beg end buffer front-advance rear-advance)))
     (overlay-put o 'conllu t)
     (while props
@@ -88,6 +93,7 @@ means left align text and right align numbers."
     o))
 
 (defun conllu--delete-overlay (o)
+  "Delete conllu overlay O."
   (and (overlay-get o 'conllu) (delete-overlay o)))
 
 (defun conllu-align-fields (beg end)
@@ -187,9 +193,9 @@ BEG and END must be point values."
 (defun conllu--sentence-aligned? ()
   "Return nil if sentence is not aligned.
 This implementation looks for an overlay with the 'conllu
-property set to t in the first character of the first token
-line. It would be bug if this overlay where there and the
-sentence were not aligned (even if wrongly aligned)."
+property set to t in the first character of the first token line.
+It would be bug if this overlay where there and the sentence were
+not aligned (even if wrongly aligned)."
   (let* ((beg (conllu--sentence-tokens-begin-point))
          (ovs (overlays-at beg)))
     (cl-some (lambda (ov) (overlay-get ov 'conllu)) ovs)))
@@ -204,8 +210,9 @@ sentence were not aligned (even if wrongly aligned)."
   "Evaluate BODY like `progn' preserving sentence alignment.
 This can be used to move between sentences maintaining
 alignment (i.e., if the source sentence was aligned, align the
-target sentence). If you simply need to realign a sentence after
-messing its alignment up, use `conllu--sentence-realign-if-aligned'."
+target sentence).  If you simply need to realign a sentence after
+messing its alignment up, use
+`conllu--sentence-realign-if-aligned'."
   (let ((aligned? (make-symbol "aligned?")))
     `(let ((,aligned? (conllu--sentence-aligned?)))
        (apply #'conllu-unalign-fields (conllu--sentence-points))

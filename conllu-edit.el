@@ -62,7 +62,7 @@
 
 (defun conllu--edit-field ()
   "Edit the field at point in the minibuffer.
-Assumes point is at token line. If field value is empty ('_'),
+Assumes point is at token line.  If field value is empty ('_'),
 put the empty string in the minibuffer instead of the original
 string."
   (let* ((original-str (apply #'buffer-substring-no-properties (conllu--field-points)))
@@ -78,7 +78,7 @@ string."
   (conllu--sentence-realign-if-aligned))
 
 (defun conllu--prompt-and-substitute-field-string (str)
-  "Prompt for string in the minibuffer and substitute it for the string in the field at point.
+  "Prompt for string STR and substitute it for the string in the field at point.
 If string is blank, insert the empty field ('_')."
   (interactive "sString to place in current field:")
   (conllu--clear-field)
@@ -88,7 +88,8 @@ If string is blank, insert the empty field ('_')."
 
 (defun conllu-insert-token-line (&optional n)
   "Insert empty token line at point if at beginning of line.
-Else do it in the next line. If called with a prefix argument, insert N lines."
+Else do it in the next line.  If called with a prefix argument,
+insert N lines."
   (interactive "p")
   (unless (bolp)
     (forward-line))
@@ -119,7 +120,7 @@ Manual adjustment of metadata is needed.";;todo: offsets deps field too
     (insert (conllu--sent->string s))))
 
 (defun conllu--offset-indices (inc tk)
-  "Offset the TK's id and head fields by n.";todo: should offset deps too.
+  "Offset the TK's id and head fields by INC." ;todo: should offset deps too.
   (let ((tk- tk))
     (cl-labels ((offset-word (n) (+ n inc))
                 (offset-empty (n n2) `(multi ,(+ n inc) ,(+ n2 inc)))

@@ -51,7 +51,7 @@
   30
   "Maximum number of errors to be shown by flycheck.
 
-Argument passed to checker. If this number is too high, emacs
+Argument passed to checker.  If this number is too high, Emacs
 might slow down when displaying the errors."
   :type  'integer
   :group 'conllu)
@@ -92,10 +92,10 @@ here."
 
 
 (defun conllu--read-string-matching (prompt predicate &optional default-value)
-  "Read a string that matches PREDICATE from the minibuffer, prompting with string PROMPT.
+  "Read a string that matches PREDICATE from the minibuffer, prompting with PROMPT.
 
-Loops until a satisfactory string is found. DEFAULT-VALUE behaves
-as in `read-string'"
+Loops until a satisfactory string is found.  DEFAULT-VALUE
+behaves as in `read-string'"
   (cl-loop
    for x = (read-string prompt nil nil default-value)
    while (not (funcall predicate x))
@@ -103,6 +103,7 @@ as in `read-string'"
 
 
 (defun conllu--flycheck-lang ()
+  "Try to derive 2-character language code from filename, else ask user."
   (or (conllu--try-derive-lang-code-from-filename)
       (conllu--read-string-matching "2-character language code or nothing for simple UD validation:"
                                     (lambda (in)
@@ -112,8 +113,7 @@ as in `read-string'"
   "2-character language code corresponding to the language of the current buffer.")
 
 (defun conllu-flycheck ()
-  "Invoke flycheck when checkers are available. Will prompt for
-language."
+  "Invoke flycheck when checkers are available."
   (interactive)
   (if conllu-flycheck-checkers
       (progn
@@ -121,12 +121,11 @@ language."
         (setq-local conllu-flycheck-lang (or (conllu--flycheck-lang)
                                              conllu-flycheck-lang))
         (flycheck-mode 1))
-    (user-error "No checker configured. Customize variable `conllu-flycheck-checkers'")))
+    (user-error "No checker configured.  Customize variable `conllu-flycheck-checkers'")))
 
 
 (defun conllu--invoke-flycheck-if ()
-  "Invoke `flycheck-mode' if a checker is available and according
-to `conllu-flycheck-on?'."
+  "Invoke `flycheck-mode' if a checker is available and according to `conllu-flycheck-on?'."
   (when conllu-flycheck-checkers
     (cl-case conllu-flycheck-on?
       (yes (conllu-flycheck))
@@ -155,7 +154,9 @@ your PATH variable."
 
 
 (defun conllu--flycheck-next-error (n)
-  "Move to next flycheck error preserving sentence alignment."
+  "Move to next flycheck error preserving sentence alignment.
+
+N behaves as in `flycheck-next-error'."
   (conllu--with-sentence-alignment
    (flycheck-next-error n)))
 
