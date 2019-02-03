@@ -4,7 +4,7 @@
 ;; Author: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; Maintainer: bruno cuconato <bcclaro+emacs@gmail.com>
 ;; URL: https://github.com/odanoburu/conllu-mode
-;; Version: 0.4.5
+;; Version: 0.5.0
 ;; Package-Requires: ((emacs "25") (cl-lib "0.5") (flycheck "30") (hydra "0.13.0") (s "1.0"))
 ;; Keywords: extensions
 
@@ -40,10 +40,30 @@
 (require 'flycheck)
 
 
+;; TODO: highlight only the column (is this desirable? what if the
+;; column is out of view because of truncate lines?)
+(flycheck-define-checker conllu-validate-python3
+  "A CoNLL-U syntax checker using the validate python 3 script.
+
+If you don't have the script you should obtain it from URL
+`www.github.com/universaldependencies/tools' and then add it to
+your PATH variable."
+  :command ("validate.py"
+            "--lang" (eval conllu-flycheck-lang)
+            "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
+            "--level" (eval conllu-flycheck-validation-level)
+            source)
+  :error-patterns
+  ((error line-start "[Line" (one-or-more space) line (zero-or-more (not (any ?\]))) "]: "
+          (message) line-end))
+  :modes conllu-mode
+  :predicate (lambda () (buffer-file-name)))
+
+
 (defcustom conllu-flycheck-checkers
   nil
   "CoNLL-U checkers to be used by Flycheck."
-  :type '(set (const :tag "Python validate script" 'conllu-validate-python3))
+  :type '(set (function-item :doc "Python validate script" conllu-validate-python3))
   :group 'conllu)
 
 
@@ -131,26 +151,6 @@ behaves as in `read-string'"
       (yes (conllu-flycheck))
       (ask (when (y-or-n-p "Enable flycheck for this buffer?")
              (conllu-flycheck))))))
-
-
-;; TODO: highlight only the column (is this desirable? what if the
-;; column is out of view because of truncate lines?)
-(flycheck-define-checker conllu-validate-python3
-  "A CoNLL-U syntax checker using the validate python 3 script.
-
-If you don't have the script you should obtain it from URL
-`www.github.com/universaldependencies/tools' and then add it to
-your PATH variable."
-  :command ("validate.py"
-            "--lang" (eval conllu-flycheck-lang)
-            "--max-err" (eval (number-to-string conllu-flycheck-error-threshold))
-            "--level" (eval conllu-flycheck-validation-level)
-            source)
-  :error-patterns
-  ((error line-start "[Line" (one-or-more space) line (zero-or-more (not (any ?\]))) "]: "
-          (message) line-end))
-  :modes conllu-mode
-  :predicate (lambda () (buffer-file-name)))
 
 
 (defun conllu--flycheck-next-error (n)
