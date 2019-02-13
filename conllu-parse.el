@@ -59,9 +59,11 @@
 (defun conllu--line->token (line)
   "Turn a well-formed CoNLL-U LINE string into a token, else report user error."
   (let ((tk (conllu--line->maybe-token line)))
-    (if tk
-        tk
-      (user-error "Malformed token line : %s" line))))
+    (or tk
+        (user-error "Malformed token line : %s" line))))
+
+(defun conllu--parse-token-at-point ()
+  (conllu--line->token (thing-at-point 'line t)))
 
 ;;; parse sent
 (defun conllu--string->sent (sent)

@@ -97,12 +97,20 @@ as in `make-overlay'."
   (and (overlay-get o 'conllu) (delete-overlay o)))
 
 (defun conllu-align-fields (beg end)
-  "Align fields in the current region.
-BEG and END must be point values."
+  "(Re-)align fields in the current region.
+
+BEG and END must be point values. Checks if sentence at point is
+aligned and unaligns it before realigning it."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (conllu--sentence-points))) ; if interactive, by default
-                                     ; align sentence
+                 (conllu--sentence-points))) ; if interactive, by default align sentence
+  (if (conllu--sentence-aligned?)
+      (conllu-realign-sentence beg end)
+    (conllu--align-fields beg end)))
+
+(defun conllu--align-fields (beg end)
+  "Align fields in the current region.
+BEG and END must be point values."
   (setq end (copy-marker end))
   (save-excursion
     (save-restriction
@@ -156,18 +164,18 @@ BEG and END must be point values."
                             right-padding (- x y)))))
 
                   ;; Do not hide separators...
-                    (let ((overlay (conllu--make-overlay beg (point) nil nil t)))
-                      (when (> left-padding 0) ; Pad on the left.
-                        ;; Display spaces before field:
-                        (overlay-put overlay 'before-string
-                                     (make-string left-padding ?\ )))
-                      (unless (eolp)
-                        (if (> right-padding 0) ; Pad on the right.
-                            ;; Display spaces after field:
-                            (overlay-put
-                             overlay
-                             'after-string (make-string right-padding ?\ )))
-                        (forward-char))))))) ;; skip separator
+                  (let ((overlay (conllu--make-overlay beg (point) nil nil t)))
+                    (when (> left-padding 0) ; Pad on the left.
+                      ;; Display spaces before field:
+                      (overlay-put overlay 'before-string
+                                   (make-string left-padding ?\ )))
+                    (unless (eolp)
+                      (if (> right-padding 0) ; Pad on the right.
+                          ;; Display spaces after field:
+                          (overlay-put
+                           overlay
+                           'after-string (make-string right-padding ?\ )))
+                      (forward-char))))))) ;; skip separator
           (forward-line)))))
   (set-marker end nil))
 
@@ -182,13 +190,12 @@ BEG and END must be point values."
   (with-silent-modifications
     (remove-list-of-text-properties beg end '(display))))
 
-(defun conllu-realign-sentence ()
+(defun conllu-realign-sentence (beg end)
   "Unalign and align current sentence fields."
-  (interactive)
-  (let ((beg (conllu--sentence-begin-point))
-        (end (conllu--sentence-end-point)))
-    (conllu-unalign-fields beg end)
-    (conllu-align-fields beg end)))
+  (interactive (list (conllu--sentence-begin-point)
+                     (conllu--sentence-end-point)))
+  (conllu-unalign-fields beg end)
+  (conllu-align-fields beg end))
 
 (defun conllu--sentence-aligned? ()
   "Return nil if sentence is not aligned.

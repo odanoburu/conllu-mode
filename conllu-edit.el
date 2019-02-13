@@ -70,6 +70,19 @@ string."
     (minibuffer-with-setup-hook (lambda () (insert str))
       (call-interactively #'conllu--prompt-and-substitute-field-string))))
 
+(defun conllu--edit-field-by-key (key point value)
+  ;;TODO: (interactive)
+  (save-excursion
+    (goto-char point)
+    (let* ((tk      (conllu--parse-token-at-point))
+           ;; (old-val (conllu--token-key->string tk key))
+           ;; (new-val (read-string "New value:" (cons old-val (1+ (length old-val)))
+           ;;                       nil "_"))
+           )
+      (conllu--token-set-key-value tk key value)
+      (delete-region (line-beginning-position) (line-end-position))
+      (insert (conllu--token->string tk)))))
+
 (defun conllu-edit-field ()
   "Interactively edit the field at point."
   (interactive)
