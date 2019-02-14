@@ -233,13 +233,22 @@ sentence."
 
 (defun conllu--sentence-points ()
   "Return points that delimit current sentence in a list."
-  (save-excursion
+  (cl-labels
+      ;; can't use (forward-sentence) because that only works in
+      ;; conllu mode
+      ((to-empty-point (n)
+                       (save-excursion
+                         (forward-line n)
+                         (forward-line 0)
+                         (while (not (or (conllu--looking-at-empty-line)
+                                         (bobp)
+                                         (eobp)))
+                           (forward-line n))
+                         (point))))
     ;; can't use conllu--sentence-begin-point because they save
     ;; excursion
-    (let ((bp (progn (backward-sentence)
-                     (point)))
-          (ep (progn (forward-sentence)
-                     (point))))
+    (let ((bp (to-empty-point -1))
+          (ep (to-empty-point 1)))
       (list bp ep))))
 
 (defun conllu--sentence-tokens-points ()
