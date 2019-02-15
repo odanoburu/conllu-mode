@@ -306,12 +306,14 @@ the first of the two numbers."
     (_ (user-error "Wrong format for key %s" key))))
 
 
-(defun conllu--token-set-key-value (tk key value)
+(defun conllu--token-set-key-value (tk key value &optional overwrite?)
   (cl-labels
       ((update (pair pairs)
-               (append (or pair nil)
-                       (seq-remove (lambda (pair) (equal (cl-second key) (car pair)))
-                                   pairs))))
+               (if overwrite?
+                   (cons pair 
+                         (seq-remove (lambda (p) (equal (cl-first pair) (cl-first p)))
+                                     pairs))
+                 (cons pair pairs))))
 
     (pcase key
       (:id (setf (conllu-token-id tk) (conllu--string->token-id value)))
@@ -319,9 +321,9 @@ the first of the two numbers."
       (:lemma (setf (conllu-token-lemma tk) value))
       (:upos (setf (conllu-token-upos tk) value))
       (:xpos (setf (conllu-token-xpos tk) value))
-      (`(:feat ,_) (setf (conllu-token-feats tk)
-                            (update (conllu--string->token-feat value)
-                                    (conllu-token-feats tk))))
+      (`(:feat ,key) (setf (conllu-token-feats tk)
+                           (update (list key value)
+                                   (conllu-token-feats tk))))
       (:feats (setf (conllu-token-feats tk) (conllu--string->token-feats value)))
       (:head (setf (conllu-token-head tk) (conllu--string->token-head value)))
       (:deprel (setf (conllu-token-deprel tk) value))

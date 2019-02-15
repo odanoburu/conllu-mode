@@ -71,14 +71,10 @@ string."
       (call-interactively #'conllu--prompt-and-substitute-field-string))))
 
 (defun conllu--edit-field-by-key (key point value)
-  ;;TODO: (interactive)
+  ;;TODO: (interactive) version of this
   (save-excursion
     (goto-char point)
-    (let* ((tk      (conllu--parse-token-at-point))
-           ;; (old-val (conllu--token-key->string tk key))
-           ;; (new-val (read-string "New value:" (cons old-val (1+ (length old-val)))
-           ;;                       nil "_"))
-           )
+    (let* ((tk (conllu--parse-token-at-point)))
       (conllu--token-set-key-value tk key value)
       (delete-region (line-beginning-position) (line-end-position))
       (insert (conllu--token->string tk)))))

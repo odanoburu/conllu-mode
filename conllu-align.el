@@ -210,7 +210,7 @@ not aligned (even if wrongly aligned)."
 (defun conllu--sentence-realign-if-aligned ()
   "Realign sentence if it has been aligned."
   (when (conllu--sentence-aligned?)
-    (conllu-realign-sentence)
+    (apply #'conllu-realign-sentence (conllu--sentence-points))
     nil))
 
 (defmacro conllu--with-sentence-alignment (&rest body)
