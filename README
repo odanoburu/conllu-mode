@@ -42,14 +42,16 @@ to be able to flycheck CoNLL-U buffers you need to:
 - obtain the =validate.py= script from the [[https://github.com/universaldependencies/tools][UD-tools]] repository (make
   sure you clone/download the whole repo, because the script depends
   on data and configuration files in there).
-- make =validate.py= available somewhere in your =PATH=. you can
-  symlink it:
+- make =validate.py= available somewhere in your =PATH=. the best way
+  to do it is to symlink it to a suitable directory.
   : ln -st /home/user/.local/bin/ /home/user/tools/validate.py
-  if you are using a Linux distribution, it's likely that you'll have
-  to change the shebang on the =validate.py= so that it reads =#!
-  /usr/bin/python3= instead of =#! /usr/bin/python=.
+  it's likely that you'll have to change the shebang on the
+  =validate.py= so that it reads =#!  /usr/bin/python3= instead of =#!
+  /usr/bin/python=.
 - do =M-x customize-variable RET conllu-flycheck-checkers= and select
-  the checkers you want Flycheck to use.
+  the checkers you want Flycheck to use. (or simply do =(setq
+  conllu-flycheck-checkers '(conllu-validate-python3))= on your init
+  file.)
 
 
 ** use
@@ -73,7 +75,6 @@ navigate between errors.
 - you can customize validation level and the maximum number of errors
   shown by customizing other variables. See =M-x customize-group
   conllu=.
-
 
 * other features
 - highlighting comments, and =upostag= and =deprel= fields
@@ -104,6 +105,18 @@ installation:
 ** MELPA
    [[https://melpa.org/#/getting-started][set MELPA up]] if you haven't already and then do:
    : M-x package-install RET conllu-mode
+
+** use-package declaration
+#+BEGIN_SRC elisp
+  (use-package conllu-mode
+    :mode "\\.conllu\\'"
+    ;; ;; if you want to have flycheck validation, uncomment these:
+    ;; :custom
+    ;; ((conllu-flycheck-on? 'ask)
+    ;;  (conllu-flycheck-checkers (quote (conllu-validate-python3))))
+    )
+#+END_SRC
+
 ** manual installation
    first you must install the dependencies: assuming you have a
    standard Emacs distribution, you need to install [[https://github.com/magnars/s.el][s]] and [[https://github.com/flycheck/flycheck][flycheck]].
