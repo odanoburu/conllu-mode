@@ -36,6 +36,7 @@
 
 ;;; Code:
 
+(require 'thingatpt)
 (require 'conllu-parse)
 (require 'conllu-thing)
 

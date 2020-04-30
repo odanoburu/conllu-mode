@@ -18,6 +18,7 @@ you can watch the following demo for an idea of what it can do:
 | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
 | =C-c C-h=   | move point to head token of present token                                                            |
 | =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
+| =C-c C-!=   | run shell command on region (or sentence at point if no region is active)                            |
 | =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
 | =M-a=       | jump to the next sentence keeping current alignment                                                  |
 | =M-e=       | jump to the previous sentence, keeping current alignment                                             |
@@ -75,6 +76,30 @@ navigate between errors.
 - you can customize validation level and the maximum number of errors
   shown by customizing other variables. See =M-x customize-group
   conllu=.
+
+* running commands
+while flycheck takes care of running a validator interactively, you
+may still have uses for running other interactive commands in a
+CoNLL-U sentence or region. for this you can use =conllu-command=
+(bound by default to =C-c C-!=).
+
+As an example, let's say you have a program called =conllu2tree= in
+your PATH that takes a CoNLL-U sentence as standard input and outputs
+a textual tree representation of the input sentence. To see the tree
+representation of the sentence you are editing, you'd simply call the
+=conllu-command= and specify =conllu2tree= as an argument. If you
+dislike specifying the same shell program argument over and over, you
+can set the variable =conllu-default-command= to something else. If
+you have more than one command that you run often, you can define your
+own function like so (and optionally bind it to whatever you like),
+changing only the ="command-to-run"=:
+
+#+BEGIN_SRC elisp
+  (defun my-conllu-command ()
+    (interactive)
+    (let ((conllu-default-command "my-default-command"))
+      (call-interactively #'conllu-command)))
+#+END_SRC
 
 * other features
 - highlighting comments, and =upostag= and =deprel= fields

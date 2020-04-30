@@ -38,6 +38,8 @@
 
 ;;;
 ;; dependencies
+(require 'whitespace)
+
 (require 'conllu-align)
 (require 'conllu-edit)
 (require 'conllu-flycheck)
@@ -45,7 +47,7 @@
 (require 'conllu-parse)
 (require 'conllu-thing)
 
-(require 'whitespace)
+
 
 ;;;
 ;; customizable
@@ -60,6 +62,18 @@
   :type 'integer
   :group 'conllu)
 
+(defcustom conllu-command-buffer
+  "*conllu-command-output*"
+  "Buffer to use for ‘conllu-command’ output."
+  :type 'string
+  :group 'conllu)
+
+(defcustom conllu-default-command
+  nil
+  "Default command run by ‘conllu-command’."
+  :type '(choice string nil)
+  :group 'conllu)
+
 ;;;
 ;; keymap
 (defvar conllu-mode-map
@@ -70,6 +84,7 @@
     (define-key map [(control ?c) (control ?h)] #'conllu-move-to-head)
     (define-key map [(control ?c) (control ?l)] #'conllu-insert-token-line)
     (define-key map [(control ?c) (control ?u)] #'conllu-unalign-fields)
+    (define-key map [(control ?c) (control ?!)] #'conllu-command)
     (define-key map [(control ?c) ?1] #'conllu-move-to-field-number-1)
     (define-key map [(control ?c) ?2] #'conllu-move-to-field-number-2)
     (define-key map [(control ?c) ?3] #'conllu-move-to-field-number-3)
@@ -116,6 +131,28 @@
   "Default font locks for ‘conllu-mode’.")
 
 ;;;
+;; standalone commands
+(defun conllu-command (beg end command)
+  "Run shell COMMAND on region delimited by BEG and END.
+
+When run interactively, if no region is active this will use the
+current sentence as standard input to the command."
+  ;; this is a very thin wrapper on ‘shell-command-on-region’, in fact
+  ;; it would be easy to replicate a version of this function by
+  ;; calling ‘mark-paragraph’ and then ‘shell-command-on-region’
+  (interactive
+   (seq-let (beg end cmd-str)
+       ;; cmd-str will be nil, we are just declaring it
+       ;; (shell-command-on-region does it like this)
+       (if (use-region-p)
+	   (list (region-beginning) (region-end))
+	 (conllu--sentence-points))
+     (setq cmd-str (or conllu-default-command
+		       (read-shell-command "Shell command to run: ")))
+     (list beg end cmd-str)))
+  (shell-command-on-region beg end command conllu-command-buffer))
+
+;;;
 ;; derive mode
 ;;;###autoload
 (define-derived-mode conllu-mode fundamental-mode "CoNLL-U"
@@ -126,8 +163,8 @@
   (setq-local tab-width conllu-tab-width)
   (setq-local comment-start "# ")
   (setq-local comment-end "")
-  (setq-local sentence-end ".$$") ;; to be able to use M-a and M-e to
-                                  ;; jump
+  ;; to be able to use M-a and M-e to jump:
+  (setq-local sentence-end ".$$")
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode)
