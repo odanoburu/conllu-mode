@@ -102,7 +102,7 @@ changing only the ="command-to-run"=:
 #+END_SRC
 
 if you want to bind this command to a key, see an example at
-[[*use-package declaration]].
+[[#use-package-declaration]].
 
 * other features
 - highlighting comments, and =upostag= and =deprel= fields
@@ -135,6 +135,9 @@ installation:
    : M-x package-install RET conllu-mode
 
 ** use-package declaration
+:PROPERTIES:
+:CUSTOM_ID: use-package-declaration
+:END:
 #+BEGIN_SRC elisp
   (use-package conllu-mode
     :mode "\\.conllu\\'"
