@@ -152,6 +152,7 @@ current sentence as standard input to the command."
      (list beg end cmd-str)))
   (shell-command-on-region beg end command conllu-command-buffer))
 
+
 ;;;
 ;; derive mode
 ;;;###autoload

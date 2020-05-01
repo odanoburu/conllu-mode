@@ -87,8 +87,8 @@ your PATH variable."
 
 
 (defcustom conllu-flycheck-error-threshold
-  30
-  "Maximum number of errors to be shown by flycheck.
+  0
+  "Maximum number of errors to be shown by flycheck (0 means show all).
 
 Argument passed to checker.  If this number is too high, Emacs
 might slow down when displaying the errors."
