@@ -40,6 +40,25 @@
 (require 'flycheck)
 
 
+(defgroup conllu-flycheck nil
+  "Support for flychecking CoNLL-U buffers."
+  :group 'conllu)
+
+(defcustom conllu-flycheck-lang
+  nil
+  "2-character language code corresponding to the language of the current buffer.
+Meant to be bound as a file- or direcory-local variable"
+  :type '(choice string nil)
+  :group 'conllu-flycheck)
+
+(defcustom conllu-flycheck-default-lang
+  "ud"
+  "2-character language code to default to.
+See ‘conllu--flycheck-lang’."
+  :type 'string
+  :group 'conllu-flycheck)
+
+
 ;; TODO: highlight only the column (is this desirable? what if the
 ;; column is out of view because of truncate lines?)
 (flycheck-define-checker conllu-validate-python3
@@ -124,13 +143,12 @@ behaves as in `read-string'"
 
 (defun conllu--flycheck-lang ()
   "Try to derive 2-character language code from filename, else ask user."
-  (or (conllu--try-derive-lang-code-from-filename)
+  (or conllu-flycheck-lang
+      (conllu--try-derive-lang-code-from-filename)
       (conllu--read-string-matching "2-character language code or nothing for simple UD validation:"
                                     (lambda (in)
-                                      (= 2 (length (s-trim in)))))))
-
-(defvar-local conllu-flycheck-lang "ud"
-  "2-character language code corresponding to the language of the current buffer.")
+                                      (= 2 (length (s-trim in)))))
+      conllu-flycheck-default-lang))
 
 (defun conllu-flycheck ()
   "Invoke flycheck when checkers are available."
@@ -138,8 +156,7 @@ behaves as in `read-string'"
   (if conllu-flycheck-checkers
       (progn
         (conllu--add-checkers)
-        (setq-local conllu-flycheck-lang (or (conllu--flycheck-lang)
-                                             conllu-flycheck-lang))
+        (setq-local conllu-flycheck-lang (conllu--flycheck-lang))
         (flycheck-mode 1))
     (user-error "No checker configured.  Customize variable `conllu-flycheck-checkers'")))
 

@@ -77,6 +77,13 @@ navigate between errors.
   shown by customizing other variables. See =M-x customize-group
   conllu=.
 
+it's sometimes useful to customize these variables per directory: if
+you have a directory of CoNLL-U files that you always want to validate
+as part of certain language, you can issue:
+
+: M-x add-dir-local-variable RET conllu-mode RET conllu-flycheck-on? RET yes
+: M-x add-dir-local-variable RET conllu-mode RET conllu-flycheck-lang RET "pt"
+
 * running commands
 while flycheck takes care of running a validator interactively, you
 may still have uses for running other interactive commands in a

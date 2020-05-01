@@ -168,7 +168,7 @@ current sentence as standard input to the command."
   (setq-local truncate-lines t)
   (setq-local whitespace-style '(face tabs newline newline-mark tab-mark))
   (whitespace-mode)
-  (conllu--invoke-flycheck-if))
+  (add-hook 'hack-local-variables-hook #'conllu--invoke-flycheck-if nil t))
 
 
 ;;;###autoload
