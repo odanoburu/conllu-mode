@@ -101,6 +101,9 @@ changing only the ="command-to-run"=:
       (call-interactively #'conllu-command)))
 #+END_SRC
 
+if you want to bind this command to a key, see an example at
+[[*use-package declaration]].
+
 * other features
 - highlighting comments, and =upostag= and =deprel= fields
 - truncate lines by default
@@ -135,7 +138,9 @@ installation:
 #+BEGIN_SRC elisp
   (use-package conllu-mode
     :mode "\\.conllu\\'"
-    ;; ;; if you want to have flycheck validation, uncomment these:
+    ;;; ;; if you want to bind a command to a key, uncomment this:
+    ;; :bind (("C-c C-t" . my-conllu-command))
+    ;;; ;; if you want to have flycheck validation, uncomment these:
     ;; :custom
     ;; ((conllu-flycheck-on? 'ask)
     ;;  (conllu-flycheck-checkers (quote (conllu-validate-python3))))
@@ -158,7 +163,6 @@ installation:
      (require 'conllu-mode)
    #+END_SRC
    in your =.emacs=.
-
 
 * contributions
 yes, please! even comments from experienced elispers are welcome. just
