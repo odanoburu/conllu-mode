@@ -86,6 +86,9 @@ your PATH variable."
   :group 'conllu)
 
 
+;; IDEA: use ‘define-obsolete-variable-alias’ to change names to
+;; something that doesn't mention flycheck, like conllu-validate
+;; (probably change name of file too)
 (defcustom conllu-flycheck-error-threshold
   0
   "Maximum number of errors to be shown by flycheck (0 means show all).

@@ -39,6 +39,9 @@ be inserted automatically.
 * flycheck
 [[file:static/flycheck-errors.png]]
 ** setup
+   :PROPERTIES:
+   :CUSTOM_ID: validation-setup
+   :END:
 to be able to flycheck CoNLL-U buffers you need to:
 
 - obtain the =validate.py= script from the [[https://github.com/universaldependencies/tools][UD-tools]] repository (make
@@ -109,8 +112,8 @@ changing only the ="command-to-run"=:
       (call-interactively #'conllu-command)))
 #+END_SRC
 
-another example would be a function to run the UD validation script on
-a sentence or a selection of sentences:
+another example would be a function to run the UD validation script
+(see [[#validation-setup]]) on a sentence or a selection of sentences:
 
 #+BEGIN_SRC elisp
   (defun conllu-validate-sentence ()
