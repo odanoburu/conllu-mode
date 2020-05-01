@@ -11,18 +11,19 @@ you can watch the following demo for an idea of what it can do:
 [[https://asciinema.org/a/vO51IVyAeKBF1uSB1ogzCXcCb][file:static/demo.png]]
 
 * default key bindings
-| key binding | description                                                                                          |
-|-------------+------------------------------------------------------------------------------------------------------|
-| =C-c C-e=   | edit token line at point interactively using a [[https://github.com/abo-abo/hydra][hydra]]                                                 |
-| =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence) |
-| =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
-| =C-c C-h=   | move point to head token of present token                                                            |
-| =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
-| =C-c C-!=   | run shell command on region (or sentence at point if no region is active)                            |
-| =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
-| =M-a=       | jump to the next sentence keeping current alignment                                                  |
-| =M-e=       | jump to the previous sentence, keeping current alignment                                             |
-| =C-c N=     | move to field number N in a token line (=C-c 0= moves to field number 10, i.e. MISC)                 |
+| command                           | key binding | description                                                                                          |
+|-----------------------------------+-------------+------------------------------------------------------------------------------------------------------|
+| =conllu-edit-hydra/body=          | =C-c C-e=   | edit token line at point interactively using a [[https://github.com/abo-abo/hydra][hydra]]                                                 |
+| =conllu-align-fields=             | =C-c C-a=   | align columns (inserts no real whitespace) in the selected region (defaults to the current sentence) |
+| =conllu-unalign-fields=           | =C-c C-u=   | unalign columns in the selected region (defaults to current sentence)                                |
+| =conllu-move-to-head=             | =C-c C-h=   | move point to head token of present token                                                            |
+| =conllu-clear-field=              | =C-c C-c=   | clear field at point, placing =_= as its value                                                       |
+| =conllu-command=                  | =C-c C-!=   | run shell command on region (or sentence at point if no region is active)                            |
+| =conllu-insert-token-line=        | =C-c C-l=   | insert empty token line at point or at next line (can be called with prefix argument for more lines) |
+| =conllu-previous-sentence=        | =M-a=       | jump to the next sentence keeping current alignment                                                  |
+| =conllu-next-sentence=            | =M-e=       | jump to the previous sentence, keeping current alignment                                             |
+| =conllu-move-to-field-number-[N]= | =C-c [N]=   | move to field number [N] in a token line (=C-c 0= moves to field number 10, i.e. MISC)               |
+
 
 * interactive editing
 
